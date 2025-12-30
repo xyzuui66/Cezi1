@@ -2,51 +2,59 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>CeziDev v5.7</title>
+    <title>CeziDev v5.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>body { background:#000; color:#fff; }</style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>body { background:#000; color:#fff; font-family: monospace; }</style>
 </head>
-<body class="p-6 font-mono">
-    <div class="flex justify-between items-center mb-10">
-        <h1 class="text-xl font-bold text-blue-500 italic">CEZIDEV_DASHBOARD_5.7</h1>
-        <div class="text-[10px] bg-blue-600/20 px-4 py-2 rounded-full">Total Messages: <span id="total-msgs">0</span></div>
-    </div>
+<body class="p-6">
+    <header class="flex justify-between items-center mb-10">
+        <h1 class="text-xl font-bold text-blue-500">CEZIDEV_CONTROL_v5.8</h1>
+        <button onclick="localStorage.clear(); location.reload();" class="text-red-500 text-[10px] border border-red-500/30 px-3 py-1 rounded">RESET SYSTEM</button>
+    </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1 bg-zinc-900 p-6 rounded-3xl border border-blue-500/20">
+            <h2 class="text-xs font-bold text-blue-500 mb-4 uppercase tracking-widest"><i class="fas fa-bullhorn mr-2"></i> Broadcast Info</h2>
+            <div class="space-y-4">
+                <input id="ann-title" type="text" placeholder="Judul Update" class="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm">
+                <textarea id="ann-msg" placeholder="Pesan untuk semua user..." class="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm h-24"></textarea>
+                <button onclick="sendAnnounce()" class="w-full bg-blue-600 py-3 rounded-xl font-bold">Kirim Pengumuman</button>
+            </div>
+        </div>
+
         <div class="bg-zinc-900 p-6 rounded-3xl h-[500px] overflow-y-auto">
-            <p class="text-[10px] text-zinc-500 mb-4 font-bold uppercase">Live Activity</p>
+            <p class="text-[10px] text-zinc-500 mb-4 font-bold uppercase">Activity Logs</p>
             <div id="log-list" class="space-y-2 text-[10px]"></div>
         </div>
+
         <div class="bg-zinc-900 p-6 rounded-3xl h-[500px] overflow-y-auto">
-            <p class="text-[10px] text-zinc-500 mb-4 font-bold uppercase">Users & Social Traffic</p>
-            <div id="user-list" class="space-y-4"></div>
+            <p class="text-[10px] text-zinc-500 mb-4 font-bold uppercase">Users Database</p>
+            <div id="user-list" class="space-y-3 text-[10px]"></div>
         </div>
     </div>
 
     <script>
+        function sendAnnounce() {
+            const t = document.getElementById('ann-title').value;
+            const m = document.getElementById('ann-msg').value;
+            if(!t || !m) return;
+            const data = JSON.parse(localStorage.getItem('cezi_announcements')) || [];
+            data.push({ title: t, message: m, time: new Date().toLocaleString() });
+            localStorage.setItem('cezi_announcements', JSON.stringify(data));
+            document.getElementById('ann-title').value = "";
+            document.getElementById('ann-msg').value = "";
+            alert("Berhasil disiarkan!");
+            sync();
+        }
+
         function sync() {
             const logs = JSON.parse(localStorage.getItem('cezi_activity_logs')) || [];
             const users = JSON.parse(localStorage.getItem('cezi_global_users')) || {};
-            const msgs = JSON.parse(localStorage.getItem('cezi_global_messages')) || [];
-
-            document.getElementById('total-msgs').innerText = msgs.length;
-
-            document.getElementById('log-list').innerHTML = logs.slice().reverse().map(l => `
-                <div class="border-b border-white/5 py-1">
-                    <span class="text-zinc-600">[${l.time}]</span> <span class="text-blue-400">${l.user}</span>: ${l.action}
-                </div>
-            `).join('');
-
-            document.getElementById('user-list').innerHTML = Object.values(users).map(u => `
-                <div class="bg-black/50 p-4 rounded-xl border border-white/5">
-                    <p class="font-bold text-sm mb-2 text-blue-500">${u.username}</p>
-                    <div class="flex flex-wrap gap-1">
-                        ${u.friends.map(f => `<span class="bg-zinc-800 px-2 py-1 rounded text-[8px]">${f}</span>`).join('')}
-                    </div>
-                </div>
-            `).join('');
+            document.getElementById('log-list').innerHTML = logs.slice().reverse().map(l => `<div class="border-b border-white/5 py-1 text-zinc-400"><b>${l.user}</b>: ${l.action}</div>`).join('');
+            document.getElementById('user-list').innerHTML = Object.values(users).map(u => `<div class="bg-black/40 p-3 rounded-lg border border-white/5 mb-2">${u.username} (${u.phone})<br><span class="text-[8px] text-zinc-600">Friends: ${u.friends.join(', ')}</span></div>`).join('');
         }
-        setInterval(sync, 2000);
+        setInterval(sync, 3000);
         sync();
     </script>
 </body>
