@@ -7,29 +7,35 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-black text-white p-6 font-sans">
+<body class="bg-[#050505] text-white p-6 font-sans">
     
-    <header class="flex justify-between items-center mb-10">
-        <h1 class="text-xl font-black italic text-blue-500 uppercase">CeziDev <span class="text-white">Master</span></h1>
+    <header class="flex justify-between items-center mb-8">
+        <h1 class="text-xl font-black italic text-blue-500 uppercase">CeziDev <span class="text-white">v1.8</span></h1>
         <button onclick="window.location.href='index.html'" class="text-[10px] font-bold bg-zinc-900 px-4 py-2 rounded-lg">KEMBALI KE APP</button>
     </header>
 
-    <div class="max-w-xl mx-auto space-y-6">
-        <div class="bg-zinc-900 p-8 rounded-[32px] border border-white/5 shadow-2xl">
-            <h2 class="text-[10px] font-black text-zinc-500 uppercase mb-4 tracking-widest">Master Server Switch</h2>
-            <div id="status-box" class="text-3xl font-black mb-8 italic">CHECKING...</div>
-            <button onclick="toggleMaint()" id="btn-m" class="w-full bg-blue-600 py-5 rounded-2xl font-black text-xs uppercase transition active:scale-95 shadow-lg shadow-blue-600/20">
-                PROSES...
-            </button>
+    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <div class="bg-zinc-900 p-6 rounded-[2rem] border border-white/5">
+            <h2 class="text-[10px] font-black text-blue-500 uppercase mb-4 tracking-widest">Kirim Pengumuman</h2>
+            <input id="ann-t" type="text" placeholder="Judul" class="w-full bg-black rounded-xl p-4 mb-3 outline-none text-sm">
+            <textarea id="ann-m" placeholder="Isi pesan..." class="w-full bg-black rounded-xl p-4 mb-4 h-24 outline-none text-sm"></textarea>
+            <button onclick="sendAnn()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xs uppercase">Siarkan Sekarang</button>
         </div>
 
-        <div class="bg-zinc-900 p-8 rounded-[32px] border border-white/5 shadow-2xl flex justify-between items-center">
-            <div>
-                <h2 class="text-[10px] font-black text-zinc-500 uppercase mb-1 tracking-widest">Database Optimization</h2>
-                <p class="text-xs text-zinc-600">Hapus chat lama untuk ringankan aplikasi.</p>
-            </div>
-            <button onclick="wipe()" class="bg-red-600/10 text-red-500 border border-red-500/20 px-6 py-3 rounded-xl font-black text-[10px] uppercase">Wipe Chat</button>
+        <div class="bg-zinc-900 p-6 rounded-[2rem] border border-white/5">
+            <h2 class="text-[10px] font-black text-orange-500 uppercase mb-4 tracking-widest">Pesan Langsung ke User</h2>
+            <input id="dev-to" type="text" placeholder="Username Tujuan (Persis)" class="w-full bg-black rounded-xl p-4 mb-3 outline-none text-sm">
+            <textarea id="dev-m" placeholder="Pesan rahasia..." class="w-full bg-black rounded-xl p-4 mb-4 h-24 outline-none text-sm"></textarea>
+            <button onclick="sendDirect()" class="w-full bg-orange-600 py-4 rounded-xl font-black text-xs uppercase">Kirim Pesan Sepihak</button>
         </div>
+
+        <div class="bg-zinc-900 p-6 rounded-[2rem] border border-white/5 text-center">
+            <h2 class="text-[10px] font-black text-zinc-500 uppercase mb-4 tracking-widest">Status Server</h2>
+            <div id="st-box" class="text-2xl font-black mb-6">CHECKING...</div>
+            <button onclick="toggleM()" id="st-btn" class="w-full py-4 rounded-xl font-black text-xs uppercase">...</button>
+        </div>
+
     </div>
 
     <script>
@@ -37,78 +43,42 @@
         let isM = false;
 
         async function getS() {
-            const res = await fetch(DB + "server_status.json");
-            const data = await res.json();
-            isM = data ? data.maintenance : false;
-            
-            const box = document.getElementById('status-box');
-            const btn = document.getElementById('btn-m');
-            
-            box.innerText = isM ? "OFFLINE (LOCKED)" : "ONLINE (OPEN)";
-            box.className = isM ? "text-3xl font-black mb-8 italic text-red-500" : "text-3xl font-black mb-8 italic text-green-500";
-            
-            btn.innerText = isM ? "Buka Akses Sekarang" : "Tutup Akses (Maintenance)";
-            btn.className = isM ? "w-full bg-green-600 py-5 rounded-2xl font-black text-xs uppercase" : "w-full bg-red-600 py-5 rounded-2xl font-black text-xs uppercase";
+            const r = await fetch(DB + "server_status.json");
+            const d = await r.json(); isM = d ? d.maintenance : false;
+            document.getElementById('st-box').innerText = isM ? "MAINTENANCE" : "ONLINE";
+            document.getElementById('st-box').className = isM ? "text-2xl font-black mb-6 text-red-500" : "text-2xl font-black mb-6 text-green-500";
+            document.getElementById('st-btn').innerText = isM ? "Buka Aplikasi" : "Kunci Aplikasi";
+            document.getElementById('st-btn').className = isM ? "w-full py-4 rounded-xl font-black text-xs bg-green-600" : "w-full py-4 rounded-xl font-black text-xs bg-red-600";
         }
 
-        async function toggleMaint() {
-            await fetch(DB + "server_status.json", { method: 'PUT', body: JSON.stringify({ maintenance: !isM }) });
+        async function toggleM() {
+            await fetch(DB + "server_status.json", { method:'PUT', body: JSON.stringify({ maintenance: !isM }) });
             getS();
-        }
-
-        async function wipe() {
-            if(confirm("Hapus semua chat?")) {
-                await fetch(DB + "chats.json", { method: 'DELETE' });
-                alert("Berhasil!");
-            }
-        }
-
-        window.onload = getS;
-        setInterval(getS, 5000);
-    </script>
-</body>
-</html>
-            }
-        }
-
-        async function clearChats() { if(confirm("Hapus total?")) { await fetch(BASE_DB + "chats.json", { method:'DELETE' }); monitorDB(); } }
-
-        setInterval(() => { getStatus(); monitorDB(); }, 5000);
-        window.onload = () => { getStatus(); loadAnn(); monitorDB(); };
-    </script>
-</body>
-</html>
-
-        // --- DASHBOARD FUNCTIONS ---
-        async function getStatus() {
-            const res = await fetch(BASE_DB + "server_status.json");
-            const data = await res.json();
-            isMaint = data ? data.maintenance : false;
-            const st = document.getElementById('stext');
-            st.innerText = isMaint ? "MAINTENANCE" : "ONLINE";
-            st.className = isMaint ? "text-xs font-bold mt-1 text-red-500 font-mono" : "text-xs font-bold mt-1 text-green-500 font-mono";
-        }
-
-        async function toggleMaint() {
-            await fetch(BASE_DB + "server_status.json", { method: 'PUT', body: JSON.stringify({ maintenance: !isMaint }) });
-            getStatus();
         }
 
         async function sendAnn() {
             const t = document.getElementById('ann-t').value;
             const m = document.getElementById('ann-m').value;
             if(!t || !m) return;
-            await fetch(BASE_DB + "announcement.json", { method:'POST', body:JSON.stringify({ title:t, message:m, ts:Date.now() }) });
+            await fetch(DB + "announcement.json", { method:'POST', body: JSON.stringify({ title:t, message:m }) });
+            alert("Pengumuman Terkirim!");
             document.getElementById('ann-t').value = ""; document.getElementById('ann-m').value = "";
-            loadAnn();
         }
 
-        async function loadAnn() {
-            const res = await fetch(BASE_DB + "announcement.json");
-            const data = await res.json();
-            const list = document.getElementById('dev-ann-list');
-            if(!data) return;
-            list.innerHTML = Object.keys(data).reverse().map(id => `
+        async function sendDirect() {
+            const to = document.getElementById('dev-to').value.trim();
+            const msg = document.getElementById('dev-m').value;
+            if(!to || !msg) return;
+            // Kirim sebagai ADMIN_DEV
+            await fetch(DB + "chats.json", { method:'POST', body: JSON.stringify({ from: "ADMIN_DEV", to: to, body: msg, time: Date.now() }) });
+            alert("Pesan Terkirim ke Inbox " + to);
+            document.getElementById('dev-to').value = ""; document.getElementById('dev-m').value = "";
+        }
+
+        window.onload = getS;
+    </script>
+</body>
+</html>
                 <div class="bg-zinc-900/50 p-4 rounded-2xl flex justify-between items-center border border-white/5">
                     <div class="truncate mr-4">
                         <p class="text-[11px] font-black text-blue-500">${data[id].title}</p>
