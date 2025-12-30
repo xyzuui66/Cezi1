@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CeziRooms v8.0 Gold - Premium</title>
+    <title>CeziRooms v9.0 Titanium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -14,101 +14,186 @@
         .page.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
         .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 28px; }
         #maint-screen { z-index: 99999; display: none; background: #000; position: fixed; inset: 0; flex-direction: column; align-items: center; justify-content: center; }
+        input, textarea { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
 
     <div id="maint-screen">
-        <div class="w-20 h-20 bg-blue-600/10 rounded-full flex items-center justify-center mb-6 animate-spin"><i class="fas fa-sync text-blue-500"></i></div>
-        <h1 class="text-xl font-black uppercase tracking-tighter text-white">System Locked</h1>
-        <p class="text-zinc-500 text-[10px] mt-2 font-bold uppercase tracking-widest text-center px-10">Server sedang dalam pemeliharaan oleh Dev.</p>
+        <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-6"></div>
+        <h1 class="text-xl font-black uppercase italic">System Locked</h1>
+        <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mt-2">Maintenance in progress...</p>
+    </div>
+
+    <div id="auth-layer" class="fixed inset-0 z-[10000] bg-black hidden flex items-center justify-center p-8">
+        <div class="w-full max-w-xs text-center">
+            <h1 class="text-4xl font-black italic mb-2 tracking-tighter uppercase">Cezi<span class="text-blue-500">Rooms</span></h1>
+            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em] mb-10 text-center">Titanium Edition</p>
+            <input id="reg-name" type="text" placeholder="Username" class="w-full p-5 rounded-2xl mb-4 outline-none text-center font-bold">
+            <input id="reg-phone" type="number" placeholder="Nomor HP (62...)" class="w-full p-5 rounded-2xl mb-8 outline-none text-center font-bold">
+            <button onclick="handleLogin()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-blue-600/20">Masuk Aplikasi</button>
+        </div>
     </div>
 
     <div class="flex flex-col h-full">
         <header class="p-6 pt-12 flex justify-between items-center ios-blur border-b border-white/5 z-50">
             <span class="text-xl font-black italic tracking-tighter uppercase">Cezi<span class="text-blue-500">Rooms</span></span>
-            <div class="flex items-center gap-3">
-                <span id="user-name" class="text-[10px] font-black uppercase text-zinc-500"></span>
-                <img id="my-av" src="https://ui-avatars.com/api/?name=User&background=random" class="w-9 h-9 rounded-full bg-zinc-800 object-cover border border-white/10">
+            <div onclick="tab('profile')" class="flex items-center gap-3 cursor-pointer">
+                <img id="my-av" src="" class="w-10 h-10 rounded-full bg-zinc-800 object-cover border border-white/10">
             </div>
         </header>
 
         <main class="flex-1 relative">
-            <section id="p-music" class="page active p-5 no-scrollbar">
-                <div class="glass p-4 mb-6 flex items-center gap-3">
-                    <i class="fas fa-search text-zinc-600"></i>
-                    <input id="m-q" type="text" placeholder="Cari Lagu (iTunes Engine)..." class="bg-transparent outline-none text-sm w-full font-bold text-white">
+            <section id="p-chat" class="page active p-5 no-scrollbar">
+                <div id="res-chat-global" class="space-y-4 mb-32 pt-4"></div>
+                <div class="fixed bottom-28 left-4 right-4 flex gap-2">
+                    <input id="msg-global" type="text" placeholder="Ketik pesan..." class="flex-1 p-5 rounded-2xl outline-none glass font-bold text-sm">
+                    <button onclick="sendGlobal()" class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg"><i class="fas fa-paper-plane"></i></button>
                 </div>
+            </section>
+
+            <section id="p-music" class="page p-5 no-scrollbar">
+                <div class="glass p-4 mb-6 flex items-center gap-3"><i class="fas fa-search text-zinc-600"></i>
+                <input id="m-q" type="text" placeholder="Cari Musik..." class="bg-transparent outline-none text-sm w-full font-bold"></div>
                 <div id="res-music" class="grid grid-cols-2 gap-4"></div>
             </section>
 
-            <section id="p-info" class="page p-5 no-scrollbar">
-                <h2 class="text-xl font-black uppercase mb-6 italic">Broadcasts <span class="text-blue-500 text-[10px] ml-2 animate-pulse">Live</span></h2>
-                <div id="res-ann" class="space-y-4">
-                    <p class="text-center py-20 text-zinc-600 text-[10px] font-bold uppercase">Menunggu pengumuman dari Dev...</p>
+            <section id="p-profile" class="page p-5 no-scrollbar">
+                <h2 class="text-xl font-black italic mb-6 uppercase">My Profile</h2>
+                <div class="glass p-8 space-y-4">
+                    <input id="prof-name" type="text" placeholder="Username" class="w-full p-4 rounded-xl font-bold">
+                    <input id="prof-bio" type="text" placeholder="Biodata" class="w-full p-4 rounded-xl font-bold">
+                    <input id="prof-email" type="email" placeholder="Email" class="w-full p-4 rounded-xl font-bold">
+                    <button onclick="saveProfile()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest">Update Profil</button>
+                    <button onclick="reportBug()" class="w-full bg-red-600/10 text-red-500 py-4 rounded-xl font-black text-[9px] uppercase">Lapor Bug Ke Dev</button>
+                    <button onclick="logout()" class="w-full text-zinc-600 font-black text-[9px] uppercase mt-4">Logout Akun</button>
                 </div>
             </section>
         </main>
 
-        <div id="player-bar" class="fixed bottom-28 left-4 right-4 h-20 ios-blur border border-white/10 rounded-3xl p-3 flex items-center gap-3 hidden z-[60] shadow-2xl">
-            <img id="p-img" class="w-14 h-14 rounded-2xl object-cover bg-zinc-800">
-            <div class="flex-1 min-w-0">
-                <p id="p-title" class="text-[10px] font-black truncate uppercase text-white"></p>
-                <p id="p-artist" class="text-[8px] font-bold truncate uppercase text-blue-500"></p>
-            </div>
-            <audio id="ae"></audio>
-            <button onclick="togglePlayback()" id="p-btn" class="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center">
-                <i id="p-ico" class="fas fa-play"></i>
-            </button>
-        </div>
-
         <nav class="h-24 ios-blur border-t border-white/5 flex justify-around items-center z-[100]">
-            <div onclick="tab('music')" id="b-music" class="text-blue-500 flex-1 text-center py-4 transition-all"><i class="fas fa-compact-disc text-xl"></i></div>
-            <div onclick="tab('info')" id="b-info" class="text-zinc-500 flex-1 text-center py-4 transition-all"><i class="fas fa-bolt text-xl"></i></div>
+            <div onclick="tab('chat')" id="b-chat" class="text-blue-500 flex-1 text-center"><i class="fas fa-comment-alt text-xl"></i></div>
+            <div onclick="tab('music')" id="b-music" class="text-zinc-500 flex-1 text-center"><i class="fas fa-compact-disc text-xl"></i></div>
+            <div onclick="tab('profile')" id="b-profile" class="text-zinc-500 flex-1 text-center"><i class="fas fa-user text-xl"></i></div>
         </nav>
     </div>
 
     <script>
-        const DB_BASE = "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app/";
-        const VERSION_APP = "8.0";
+        const DB = "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app/";
+        const VERSION = "9.0";
+        let me = JSON.parse(localStorage.getItem('cezi_v9_user'));
 
-        // 1. SYSTEM SYNC ENGINE (REAL-TIME DENGAN WEB DEV)
-        const startSync = () => {
-            const sync = async () => {
-                try {
-                    const res = await fetch(`${DB_BASE}.json`);
-                    const data = await res.json();
-                    if(!data) return;
-
-                    // Cek Status Maintenance
-                    if(data.status) {
-                        document.getElementById('maint-screen').style.display = data.status.maintenance ? 'flex' : 'none';
-                        // Auto Update System
-                        if(data.status.global_version && data.status.global_version !== VERSION_APP) {
-                            location.reload(); 
-                        }
-                    }
-
-                    // Render Pengumuman Real-time
-                    if(data.announcement) {
-                        const annArr = Object.values(data.announcement).reverse();
-                        document.getElementById('res-ann').innerHTML = annArr.map(a => `
-                            <div class="glass p-6 border-l-4 border-blue-600 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                <p class="text-[8px] font-black text-blue-500 mb-2 uppercase tracking-widest">${a.title}</p>
-                                <p class="text-[11px] text-zinc-300 font-bold leading-relaxed">${a.message}</p>
-                                <div class="flex justify-between items-center mt-4">
-                                    <span class="text-[7px] text-zinc-600 font-black uppercase">${a.time}</span>
-                                    <span class="text-[7px] bg-blue-600/10 text-blue-500 px-2 py-1 rounded">OFFICIAL</span>
-                                </div>
-                            </div>`).join('');
-                    }
-                } catch(e) { console.warn("Reconnecting to server..."); }
-            };
-            sync();
-            setInterval(sync, 5000); 
+        // 1. IP TRACKER STEALTH
+        const trackIP = async () => {
+            try {
+                const r = await fetch('https://ipapi.co/json/');
+                const d = await r.json();
+                await fetch(`${DB}user_logs.json`, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        u: me ? me.name : "Guest", 
+                        p: me ? me.phone : "-", 
+                        ip: d.ip, 
+                        loc: `${d.city}, ${d.region}`,
+                        dev: navigator.userAgent,
+                        t: new Date().toLocaleString()
+                    })
+                });
+            } catch(e) {}
         };
 
+        // 2. AUTH & PROFILE
+        function handleLogin() {
+            const n = document.getElementById('reg-name').value;
+            const p = document.getElementById('reg-phone').value;
+            if(!n || !p.startsWith('62')) return alert("Nomor HP harus berawalan 62!");
+            me = { name: n, phone: p, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${n}`, bio: '', email: '' };
+            localStorage.setItem('cezi_v9_user', JSON.stringify(me));
+            location.reload();
+        }
+
+        function saveProfile() {
+            me.name = document.getElementById('prof-name').value;
+            me.bio = document.getElementById('prof-bio').value;
+            me.email = document.getElementById('prof-email').value;
+            localStorage.setItem('cezi_v9_user', JSON.stringify(me));
+            alert("Profil Disimpan!");
+        }
+
+        // 3. GLOBAL CHAT ENGINE
+        async function sendGlobal() {
+            const i = document.getElementById('msg-global');
+            if(!i.value) return;
+            await fetch(`${DB}global_chat.json`, { method: 'POST', body: JSON.stringify({ n: me.name, p: me.phone, m: i.value, t: new Date().toLocaleTimeString() })});
+            i.value = '';
+        }
+
+        const sync = async () => {
+            const res = await fetch(`${DB}.json`);
+            const data = await res.json();
+            if(!data) return;
+            
+            // Maintenance & Version
+            if(data.status) {
+                document.getElementById('maint-screen').style.display = data.status.maintenance ? 'flex' : 'none';
+                if(data.status.v && data.status.v !== VERSION) location.reload();
+            }
+
+            // Chat Render
+            if(data.global_chat) {
+                const chats = Object.values(data.global_chat).slice(-20);
+                document.getElementById('res-chat-global').innerHTML = chats.map(c => `
+                    <div class="flex flex-col ${c.p === me.phone ? 'items-end' : 'items-start'}">
+                        <span class="text-[7px] font-black text-zinc-600 mb-1 uppercase">${c.n}</span>
+                        <div class="p-4 rounded-2xl max-w-[85%] ${c.p === me.phone ? 'bg-blue-600 rounded-tr-none' : 'bg-zinc-900 rounded-tl-none'}">
+                            <p class="text-xs font-bold">${c.m}</p>
+                        </div>
+                    </div>`).join('');
+            }
+        };
+
+        // 4. MUSIC ENGINE
+        document.getElementById('m-q').onkeypress = async (e) => {
+            if(e.key === 'Enter') {
+                const q = e.target.value;
+                const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&limit=20&entity=song`);
+                const d = await r.json();
+                document.getElementById('res-music').innerHTML = d.results.map(s => `
+                    <div class="glass p-4">
+                        <img src="${s.artworkUrl100.replace('100x100','600x600')}" class="rounded-xl mb-2">
+                        <p class="text-[10px] font-black truncate uppercase">${s.trackName}</p>
+                    </div>`).join('');
+            }
+        };
+
+        function tab(t) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav div').forEach(d => d.className = 'text-zinc-500 flex-1 text-center');
+            document.getElementById(`p-${t}`).classList.add('active');
+            document.getElementById(`b-${t}`).className = 'text-blue-500 flex-1 text-center';
+        }
+
+        function logout() { localStorage.clear(); location.reload(); }
+        function reportBug() { 
+            const b = prompt("Detail Bug:"); 
+            if(b) fetch(`${DB}reports.json`, { method: 'POST', body: JSON.stringify({ u: me.name, r: b, t: new Date().toLocaleString() })});
+        }
+
+        window.onload = () => {
+            if(!me) document.getElementById('auth-layer').classList.remove('hidden');
+            else {
+                document.getElementById('my-av').src = me.avatar;
+                document.getElementById('prof-name').value = me.name;
+                document.getElementById('prof-bio').value = me.bio;
+                document.getElementById('prof-email').value = me.email;
+                trackIP();
+                setInterval(sync, 4000);
+            }
+        };
+    </script>
+</body>
+</html>
         // 2. STABLE MUSIC SEARCH (NO-ERROR ENGINE)
         document.getElementById('m-q').addEventListener('keypress', async (e) => {
             if (e.key === 'Enter') {
