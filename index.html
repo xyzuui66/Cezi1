@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CeziRooms v5.8</title>
+    <title>CeziRooms v6.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -15,10 +15,11 @@
         .page { display: none; height: 100%; overflow-y: auto; padding-bottom: 240px; }
         .page.active { display: block; animation: fadeIn 0.2s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-        input:focus { outline: none; border-color: var(--ios-blue); }
         .notif-dot { position: absolute; top: -2px; right: 10px; width: 10px; height: 10px; background: #FF3B30; border-radius: 50%; border: 2px solid black; }
-        .chat-bubble-me { background: var(--ios-blue); border-radius: 18px 18px 0 18px; align-self: flex-end; }
-        .chat-bubble-friend { background: rgba(255,255,255,0.1); border-radius: 18px 18px 18px 0; align-self: flex-start; }
+        .chat-bubble-me { background: var(--ios-blue); border-radius: 18px 18px 0 18px; align-self: flex-end; max-width: 80%; }
+        .chat-bubble-friend { background: rgba(255,255,255,0.1); border-radius: 18px 18px 18px 0; align-self: flex-start; max-width: 80%; }
+        /* Hide scrollbar */
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
@@ -26,10 +27,10 @@
     <div id="auth-modal" class="fixed inset-0 z-[100] bg-black flex items-center justify-center p-8 hidden">
         <div class="w-full max-w-sm text-center">
             <h1 class="text-4xl font-black italic tracking-tighter mb-2">CEZI<span class="text-blue-500">ROOMS</span></h1>
-            <p class="text-zinc-500 text-xs mb-8">Login untuk menyimpan data secara permanen.</p>
-            <input id="login-phone" type="tel" placeholder="Nomor HP" class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-center mb-3">
-            <input id="login-name" type="text" placeholder="Username" class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-center mb-6">
-            <button onclick="handleAuth()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold shadow-lg">Mulai</button>
+            <p class="text-zinc-500 text-xs mb-8">Data tersimpan permanen di cloud database.</p>
+            <input id="login-phone" type="tel" placeholder="Nomor HP" class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-center mb-3 text-white outline-none focus:border-blue-500">
+            <input id="login-name" type="text" placeholder="Username" class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-center mb-6 text-white outline-none focus:border-blue-500">
+            <button onclick="handleAuth()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition">Masuk</button>
         </div>
     </div>
 
@@ -41,7 +42,7 @@
 
         <main class="flex-1 overflow-hidden relative">
             <section id="page-music" class="page active p-5">
-                <input id="music-search" type="text" placeholder="Cari lagu & tekan Enter..." class="w-full bg-zinc-900 border border-white/5 rounded-2xl px-5 py-4 mb-6">
+                <input id="music-search" type="text" placeholder="Cari lagu & tekan Enter..." class="w-full bg-zinc-900 border border-white/5 rounded-2xl px-5 py-4 mb-6 outline-none focus:border-blue-500 text-white">
                 <div id="music-results" class="grid grid-cols-2 gap-4"></div>
             </section>
 
@@ -50,36 +51,37 @@
                     <div class="glass-card p-5 mb-6">
                         <p class="text-[10px] font-bold text-zinc-500 uppercase mb-3 tracking-widest">Tambah Teman</p>
                         <div class="flex gap-2">
-                            <input id="friend-input" type="text" placeholder="Username" class="flex-1 bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm">
-                            <button onclick="addFriend()" class="bg-blue-600 px-4 rounded-xl text-xs font-bold">Add</button>
+                            <input id="friend-input" type="text" placeholder="Username" class="flex-1 bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white outline-none">
+                            <button onclick="addFriend()" class="bg-blue-600 px-4 rounded-xl text-xs font-bold active:scale-95 transition">Add</button>
                         </div>
                     </div>
                     <div id="friend-list" class="space-y-3"></div>
                 </div>
-                <div id="private-chat" class="hidden">
+
+                <div id="private-chat" class="hidden flex flex-col h-full">
                     <button onclick="closeChat()" class="mb-4 text-zinc-500 flex items-center gap-2 text-sm"><i class="fas fa-chevron-left"></i> Kembali</button>
-                    <div id="message-display" class="glass-card h-[350px] overflow-y-auto p-4 flex flex-col gap-3 mb-4"></div>
-                    <div class="flex gap-2">
-                        <input id="msg-input" type="text" placeholder="Ketik pesan..." class="flex-1 bg-zinc-900 rounded-full px-5 py-3 text-sm">
-                        <button onclick="sendMessage()" class="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center"><i class="fas fa-paper-plane"></i></button>
+                    <div id="message-display" class="glass-card flex-1 overflow-y-auto p-4 flex flex-col gap-4 mb-4">
+                        </div>
+                    <div class="flex gap-2 shrink-0 pb-4">
+                        <input id="msg-input" type="text" placeholder="Ketik pesan..." class="flex-1 bg-zinc-900 rounded-full px-5 py-3 text-sm text-white outline-none">
+                        <button onclick="sendMessage()" class="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center active:scale-90 transition"><i class="fas fa-paper-plane"></i></button>
                     </div>
                 </div>
             </section>
 
             <section id="page-announce" class="page p-5">
-                <h2 class="text-xl font-bold mb-6">Update & Info</h2>
+                <h2 class="text-xl font-bold mb-6 italic">Update <span class="text-blue-500">Info</span></h2>
                 <div id="announce-list" class="space-y-4"></div>
             </section>
 
             <section id="page-ai" class="page p-5">
-                <div class="glass-card flex flex-col h-[400px]">
+                <div class="glass-card flex flex-col h-[450px]">
                     <div id="ai-messages" class="flex-1 overflow-y-auto p-4 space-y-4 text-xs"></div>
                     <div class="p-3 border-t border-white/5 flex gap-2">
-                        <input id="ai-input" type="text" placeholder="Tanya Omni..." class="flex-1 bg-black border border-zinc-800 rounded-full px-4 text-xs">
+                        <input id="ai-input" type="text" placeholder="Tanya Omni AI..." class="flex-1 bg-black border border-zinc-800 rounded-full px-4 text-xs text-white outline-none">
                         <button onclick="askOmni()" class="bg-blue-600 w-10 h-10 rounded-full flex items-center justify-center"><i class="fas fa-paper-plane text-xs"></i></button>
                     </div>
                 </div>
-                <p class="text-center text-[10px] text-zinc-600 mt-4 italic">© CeziDev - Omni-AI</p>
             </section>
         </main>
 
@@ -87,28 +89,199 @@
             <img id="player-art" class="w-12 h-12 rounded-lg object-cover">
             <div class="flex-1 overflow-hidden"><p id="player-title" class="text-[10px] font-bold truncate"></p></div>
             <audio id="main-audio"></audio>
-            <button onclick="togglePlay()" class="w-10 h-10 bg-white text-black rounded-full"><i id="play-icon" class="fas fa-play"></i></button>
+            <button onclick="togglePlay()" class="w-10 h-10 bg-white text-black rounded-full shadow-lg"><i id="play-icon" class="fas fa-play"></i></button>
         </div>
 
         <nav class="h-24 ios-blur border-t border-white/5 flex justify-around items-center px-4 shrink-0 relative">
-            <div onclick="nav('music')" id="tab-music" class="text-blue-500 text-center flex-1"><i class="fas fa-music text-lg"></i><p class="text-[8px] mt-1 font-bold">Musik</p></div>
-            <div onclick="nav('social')" id="tab-social" class="text-zinc-500 text-center flex-1"><i class="fas fa-user-group text-lg"></i><p class="text-[8px] mt-1 font-bold">Social</p></div>
-            <div onclick="nav('announce')" id="tab-announce" class="text-zinc-500 text-center flex-1 relative">
+            <div onclick="nav('music')" id="tab-music" class="text-blue-500 text-center flex-1 cursor-pointer"><i class="fas fa-music text-lg"></i><p class="text-[8px] mt-1 font-bold">Musik</p></div>
+            <div onclick="nav('social')" id="tab-social" class="text-zinc-500 text-center flex-1 cursor-pointer"><i class="fas fa-user-group text-lg"></i><p class="text-[8px] mt-1 font-bold">Social</p></div>
+            <div onclick="nav('announce')" id="tab-announce" class="text-zinc-500 text-center flex-1 cursor-pointer relative">
                 <i class="fas fa-bell text-lg"></i>
                 <div id="notif-dot" class="notif-dot hidden"></div>
                 <p class="text-[8px] mt-1 font-bold">Update</p>
             </div>
-            <div onclick="nav('ai')" id="tab-ai" class="text-zinc-500 text-center flex-1"><i class="fas fa-robot text-lg"></i><p class="text-[8px] mt-1 font-bold">Omni-AI</p></div>
-            <div onclick="logout()" class="text-zinc-500 text-center flex-1"><i class="fas fa-power-off text-lg text-red-500"></i><p class="text-[8px] mt-1 font-bold">Exit</p></div>
+            <div onclick="nav('ai')" id="tab-ai" class="text-zinc-500 text-center flex-1 cursor-pointer"><i class="fas fa-robot text-lg"></i><p class="text-[8px] mt-1 font-bold">Omni-AI</p></div>
+            <div onclick="logout()" class="text-zinc-500 text-center flex-1 cursor-pointer"><i class="fas fa-power-off text-lg text-red-500"></i><p class="text-[8px] mt-1 font-bold">Exit</p></div>
         </nav>
     </div>
 
     <script>
-        let activeChat = null;
-        let clickCount = 0;
-        const chatBox = document.getElementById('ai-messages');
+        // CONFIG FIREBASE MILIKMU
+        const BASE_DB = "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app/";
+        const ANN_URL = BASE_DB + "announcement.json";
+        const CHAT_URL = BASE_DB + "chats.json";
 
-        // --- AUTH & CORE ---
+        let activeChat = null;
+        let lastAnnounceTs = localStorage.getItem('last_announce_ts') || 0;
+        let clickCount = 0;
+
+        // --- AUTH SYSTEM ---
+        function checkSession() {
+            const s = JSON.parse(localStorage.getItem('cezi_session'));
+            if(s) {
+                document.getElementById('auth-modal').classList.add('hidden');
+                document.getElementById('user-avatar').src = s.avatar;
+                renderFriends();
+                startBackgroundSync();
+            } else {
+                document.getElementById('auth-modal').classList.remove('hidden');
+            }
+        }
+
+        function handleAuth() {
+            const p = document.getElementById('login-phone').value;
+            const u = document.getElementById('login-name').value;
+            if(!p || !u) return alert("Lengkapi data!");
+            const session = { phone:p, username:u, avatar:`https://api.dicebear.com/7.x/avataaars/svg?seed=${u}`, friends:[] };
+            localStorage.setItem('cezi_session', JSON.stringify(session));
+            location.reload();
+        }
+
+        function logout() { localStorage.removeItem('cezi_session'); location.reload(); }
+
+        // --- REAL-TIME CHAT (FIREBASE) ---
+        async function sendMessage() {
+            const input = document.getElementById('msg-input');
+            if(!input.value.trim() || !activeChat) return;
+
+            const me = JSON.parse(localStorage.getItem('cezi_session')).username;
+            const msgData = {
+                from: me,
+                to: activeChat,
+                body: input.value,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                timestamp: Date.now()
+            };
+
+            try {
+                await fetch(CHAT_URL, { method: 'POST', body: JSON.stringify(msgData) });
+                input.value = "";
+                renderMessages();
+            } catch(e) { console.error("Kirim gagal"); }
+        }
+
+        async function renderMessages() {
+            if(!activeChat || document.getElementById('private-chat').classList.contains('hidden')) return;
+            try {
+                const res = await fetch(CHAT_URL);
+                const data = await res.json();
+                const me = JSON.parse(localStorage.getItem('cezi_session')).username;
+                const display = document.getElementById('message-display');
+
+                if(!data) return;
+
+                const filtered = Object.values(data).filter(m => 
+                    (m.from === me && m.to === activeChat) || (m.from === activeChat && m.to === me)
+                );
+
+                display.innerHTML = filtered.map(m => `
+                    <div class="flex flex-col ${m.from === me ? 'items-end' : 'items-start'}">
+                        <div class="${m.from === me ? 'chat-bubble-me' : 'chat-bubble-friend'} px-4 py-2 text-[11px] font-bold">
+                            ${m.body}
+                        </div>
+                        <span class="text-[7px] text-zinc-600 mt-1 px-1">${m.time}</span>
+                    </div>
+                `).join('');
+                display.scrollTop = display.scrollHeight;
+            } catch(e) {}
+        }
+
+        // --- FIREBASE SYNC (PENGUMUMAN & CHAT) ---
+        function startBackgroundSync() {
+            setInterval(async () => {
+                // 1. Sync Pengumuman
+                try {
+                    const res = await fetch(ANN_URL);
+                    const ann = await res.json();
+                    if(ann && ann.timestamp > lastAnnounceTs) {
+                        const local = JSON.parse(localStorage.getItem('cezi_announcements')) || [];
+                        local.push(ann);
+                        localStorage.setItem('cezi_announcements', JSON.stringify(local));
+                        document.getElementById('notif-dot').classList.remove('hidden');
+                        lastAnnounceTs = ann.timestamp;
+                        localStorage.setItem('last_announce_ts', ann.timestamp);
+                        alert("📢 INFO BARU: " + ann.title);
+                        if(document.getElementById('page-announce').classList.contains('active')) renderAnnounce();
+                    }
+                } catch(e) {}
+
+                // 2. Sync Chat jika sedang buka room
+                renderMessages();
+            }, 3000);
+        }
+
+        function renderAnnounce() {
+            const data = JSON.parse(localStorage.getItem('cezi_announcements')) || [];
+            document.getElementById('announce-list').innerHTML = data.slice().reverse().map(a => `
+                <div class="glass-card p-5 border-l-4 border-blue-600 animate-fade-in">
+                    <p class="text-[8px] text-blue-400 font-bold mb-1 uppercase tracking-tighter">Official Update</p>
+                    <p class="text-sm font-extrabold mb-1">${a.title}</p>
+                    <p class="text-xs text-zinc-400 leading-relaxed">${a.message}</p>
+                    <p class="text-[7px] text-zinc-600 mt-3 text-right">${a.time}</p>
+                </div>
+            `).join('') || '<p class="text-center text-zinc-800 text-xs py-20 italic">Belum ada pengumuman.</p>';
+            document.getElementById('notif-dot').classList.add('hidden');
+        }
+
+        // --- MUSIC SYSTEM ---
+        document.getElementById('music-search').onkeypress = (e) => { if(e.key==='Enter') searchMusic(e.target.value); };
+        async function searchMusic(q) {
+            const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=20`);
+            const data = await res.json();
+            document.getElementById('music-results').innerHTML = data.results.map(t => `
+                <div onclick="play('${t.previewUrl}','${t.trackName.replace(/'/g,"")}','${t.artworkUrl100}')" class="glass-card p-3 active:scale-95 transition">
+                    <img src="${t.artworkUrl100.replace('100x100','300x300')}" class="w-full rounded-xl mb-2 bg-zinc-800">
+                    <p class="text-[9px] font-bold truncate">${t.trackName}</p>
+                </div>`).join('');
+        }
+        function play(u,t,a) {
+            const aud = document.getElementById('main-audio');
+            document.getElementById('player-art').src = a;
+            document.getElementById('player-title').innerText = t;
+            aud.src = u; aud.play();
+            document.getElementById('mini-player').classList.remove('hidden');
+            document.getElementById('play-icon').className = "fas fa-pause";
+        }
+        function togglePlay() { 
+            const a = document.getElementById('main-audio'); 
+            if(a.paused) { a.play(); document.getElementById('play-icon').className="fas fa-pause"; }
+            else { a.pause(); document.getElementById('play-icon').className="fas fa-play"; }
+        }
+
+        // --- SOCIAL NAV ---
+        function addFriend() {
+            const f = document.getElementById('friend-input').value.trim();
+            let s = JSON.parse(localStorage.getItem('cezi_session'));
+            if(!f || s.friends.includes(f)) return;
+            s.friends.push(f);
+            localStorage.setItem('cezi_session', JSON.stringify(s));
+            renderFriends();
+            document.getElementById('friend-input').value = "";
+        }
+        function renderFriends() {
+            const s = JSON.parse(localStorage.getItem('cezi_session'));
+            document.getElementById('friend-list').innerHTML = s.friends.map(f => `
+                <div onclick="openChat('${f}')" class="glass-card p-4 flex justify-between items-center text-sm font-bold active:scale-[0.98] transition">
+                    <span>${f}</span><i class="fas fa-comment-dots text-blue-500"></i>
+                </div>`).join('');
+        }
+        function openChat(f) { activeChat = f; document.getElementById('social-main').classList.add('hidden'); document.getElementById('private-chat').classList.remove('hidden'); renderMessages(); }
+        function closeChat() { activeChat = null; document.getElementById('social-main').classList.remove('hidden'); document.getElementById('private-chat').classList.add('hidden'); }
+
+        // --- NAV CORE ---
+        function nav(p) {
+            document.querySelectorAll('.page').forEach(e => e.classList.remove('active'));
+            document.getElementById('page-'+p).classList.add('active');
+            document.querySelectorAll('nav div').forEach(e => e.classList.replace('text-blue-500','text-zinc-500'));
+            document.getElementById('tab-'+p).classList.replace('text-zinc-500','text-blue-500');
+            if(p === 'announce') renderAnnounce();
+        }
+
+        document.getElementById('logo-cezi').onclick = () => { clickCount++; if(clickCount>=5) window.location.href="dev.html"; };
+        window.onload = checkSession;
+    </script>
+</body>
+</html>
         function checkSession() {
             const s = JSON.parse(localStorage.getItem('cezi_session'));
             if(s) { document.getElementById('auth-modal').classList.add('hidden'); document.getElementById('user-avatar').src = s.avatar; renderFriends(); checkNewAnnounce(); }
