@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>CeziDev v5.5 - Control Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>body { background:#050505; color:#fff; font-family: sans-serif; }</style>
+</head>
+<body class="p-6">
+    <header class="flex justify-between items-center mb-10">
+        <h1 class="text-2xl font-black text-blue-500 tracking-tighter">CEZIDEV <span class="text-white">5.5</span></h1>
+        <div class="flex gap-2">
+            <span id="bug-notif" class="hidden bg-red-600 px-3 py-1 rounded-full text-[10px] font-bold animate-pulse">BUG REPORTED!</span>
+            <button onclick="localStorage.clear(); location.reload();" class="bg-zinc-800 px-4 py-2 rounded-lg text-xs font-bold text-red-400">Wipe Data</button>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-zinc-900/40 border border-white/5 rounded-3xl p-6 h-[550px] flex flex-col">
+            <h3 class="font-bold mb-4 text-xs text-zinc-500 uppercase tracking-widest">Aktivitas Real-time</h3>
+            <div id="log-list" class="flex-1 overflow-y-auto space-y-2 text-[10px] font-mono pr-2"></div>
+        </div>
+
+        <div class="bg-zinc-900/40 border border-white/5 rounded-3xl p-6 h-[550px] overflow-y-auto">
+            <h3 class="font-bold mb-4 text-xs text-zinc-500 uppercase tracking-widest">Database Pengguna & Teman</h3>
+            <div id="user-list" class="grid gap-4"></div>
+        </div>
+    </div>
+
+    <script>
+        function sync() {
+            const logs = JSON.parse(localStorage.getItem('cezi_activity_logs')) || [];
+            const users = JSON.parse(localStorage.getItem('cezi_global_users')) || {};
+            
+            // Render Logs
+            document.getElementById('log-list').innerHTML = logs.slice().reverse().map(l => `
+                <div class="p-3 bg-black/20 rounded-xl mb-2 border-l-2 ${l.action.includes('Bug') ? 'border-red-600 bg-red-600/5' : 'border-blue-600'}">
+                    <span class="text-blue-500 font-bold">[${l.time}]</span> <b>${l.user}</b> <span class="text-zinc-400">→ ${l.action}</span>
+                </div>
+            `).join('');
+
+            if(logs.some(l => l.action.includes('Bug'))) document.getElementById('bug-notif').classList.remove('hidden');
+
+            // Render Users & their Friends
+            document.getElementById('user-list').innerHTML = Object.values(users).map(u => `
+                <div class="bg-zinc-800/30 p-4 rounded-2xl border border-white/5">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <img src="${u.avatar}" class="w-10 h-10 rounded-full bg-black">
+                            <div>
+                                <p class="font-bold text-sm text-blue-400">${u.username}</p>
+                                <p class="text-[9px] text-zinc-500 font-mono">${u.phone}</p>
+                            </div>
+                        </div>
+                        <span class="text-[8px] bg-green-500/10 text-green-500 px-2 py-1 rounded font-bold uppercase">Online</span>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-white/5">
+                        <p class="text-[9px] font-bold text-zinc-600 uppercase mb-2">Daftar Teman (${u.friends ? u.friends.length : 0})</p>
+                        <div class="flex flex-wrap gap-1">
+                            ${u.friends && u.friends.length > 0 ? u.friends.map(f => `<span class="bg-black/50 text-zinc-400 px-2 py-1 rounded-md text-[8px] border border-white/5">${f}</span>`).join('') : '<span class="text-zinc-700 text-[8px]">Tidak ada teman</span>'}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        setInterval(sync, 2000);
+        sync();
+    </script>
+</body>
+</html>
