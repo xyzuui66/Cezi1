@@ -3,40 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CeziDev Control</title>
+    <title>CeziDev Control v2.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #050505; color: #fff; }
+        .card { background: #111; border: 1px solid rgba(255,255,255,0.05); border-radius: 28px; padding: 24px; }
+        input, textarea { background: #000 !important; border: 1px solid #222 !important; color: white !important; border-radius: 16px !important; }
+        input:focus, textarea:focus { border-color: #007AFF !important; outline: none; }
+    </style>
 </head>
-<body class="bg-black text-white p-6">
+<body class="p-6 pb-20">
     
-    <header class="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
-        <h1 class="text-xl font-black italic text-blue-500 uppercase">CeziDev <span class="text-white">v1.9</span></h1>
-        <button onclick="window.location.href='index.html'" class="text-[10px] font-bold bg-zinc-900 px-4 py-2 rounded-lg">KE APLIKASI</button>
+    <header class="max-w-5xl mx-auto flex justify-between items-center mb-10">
+        <div>
+            <h1 class="text-2xl font-black italic tracking-tighter">CEZIDEV <span class="text-blue-500">MASTER</span></h1>
+            <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.3em]">Version 2.5 Control Suite</p>
+        </div>
+        <button onclick="window.location.href='index.html'" class="bg-zinc-900 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/5 hover:bg-white hover:text-black transition">Buka Aplikasi</button>
     </header>
 
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-zinc-900 p-6 rounded-[2rem] border border-white/5">
-                <h2 class="text-[10px] font-black text-blue-500 uppercase mb-4">Siaran Update</h2>
-                <input id="ann-t" type="text" placeholder="Judul" class="w-full bg-black rounded-xl p-4 mb-3 outline-none text-sm">
-                <textarea id="ann-m" placeholder="Isi pesan..." class="w-full bg-black rounded-xl p-4 mb-4 h-24 outline-none text-sm"></textarea>
-                <button onclick="sendAnn()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xs uppercase">Update Pengumuman</button>
+        <div class="card lg:col-span-1">
+            <div class="flex items-center gap-3 mb-6 text-blue-500">
+                <i class="fas fa-bullhorn text-xl"></i>
+                <h2 class="text-xs font-black uppercase tracking-widest">Update Pengumuman</h2>
             </div>
-
-            <div class="bg-zinc-900 p-6 rounded-[2rem] border border-white/5">
-                <h2 class="text-[10px] font-black text-orange-500 uppercase mb-4">Pesan Dev ke User</h2>
-                <input id="dev-to" type="text" placeholder="Username Target (Persis)" class="w-full bg-black rounded-xl p-4 mb-3 outline-none text-sm">
-                <textarea id="dev-m" placeholder="Pesan..." class="w-full bg-black rounded-xl p-4 mb-4 h-24 outline-none text-sm"></textarea>
-                <button onclick="sendDirect()" class="w-full bg-orange-600 py-4 rounded-xl font-black text-xs uppercase">Kirim Broadcast Pribadi</button>
-            </div>
+            <input id="ann-t" type="text" placeholder="Judul Pembaruan" class="w-full p-4 mb-3 text-sm">
+            <textarea id="ann-m" placeholder="Apa yang baru di versi ini?" class="w-full p-4 mb-4 h-28 text-sm resize-none"></textarea>
+            <button onclick="sendAnn()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-[10px] uppercase shadow-lg shadow-blue-600/20 active:scale-95 transition">Publish Update</button>
         </div>
 
-        <div class="bg-zinc-900 p-8 rounded-[2rem] border border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="text-center md:text-left">
-                <h2 class="text-[10px] font-black text-zinc-500 uppercase mb-1">Server Status</h2>
-                <div id="st-box" class="text-3xl font-black italic">...</div>
+        <div class="card lg:col-span-1 border-orange-500/20">
+            <div class="flex items-center gap-3 mb-6 text-orange-500">
+                <i class="fas fa-comment-shield text-xl"></i>
+                <h2 class="text-xs font-black uppercase tracking-widest">Broadcast Ke User</h2>
             </div>
-            <button onclick="toggleM()" id="st-btn" class="px-10 py-5 rounded-2xl font-black text-xs uppercase transition shadow-xl">...</button>
+            <input id="dev-to" type="text" placeholder="Username Penerima (Persis)" class="w-full p-4 mb-3 text-sm">
+            <textarea id="dev-m" placeholder="Pesan penting untuk user..." class="w-full p-4 mb-4 h-28 text-sm resize-none"></textarea>
+            <button onclick="sendDirect()" class="w-full bg-orange-600 py-4 rounded-xl font-black text-[10px] uppercase shadow-lg shadow-orange-600/20 active:scale-95 transition">Kirim Pesan Sepihak</button>
+        </div>
+
+        <div class="card flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-3 mb-6 text-zinc-500">
+                    <i class="fas fa-server text-xl"></i>
+                    <h2 class="text-xs font-black uppercase tracking-widest">System Status</h2>
+                </div>
+                <div id="st-box" class="text-4xl font-black italic mb-2 tracking-tighter">CHECKING...</div>
+                <p id="st-desc" class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest mb-8">Menghubungkan ke Firebase...</p>
+            </div>
+            <button onclick="toggleM()" id="st-btn" class="w-full py-5 rounded-2xl font-black text-[10px] uppercase transition shadow-2xl">Memuat...</button>
+        </div>
+
+        <div class="card md:col-span-2 lg:col-span-3 border-red-500/20">
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center gap-3 text-red-500">
+                    <i class="fas fa-history text-xl"></i>
+                    <h2 class="text-xs font-black uppercase tracking-widest">Moderasi Story (Live)</h2>
+                </div>
+                <button onclick="clearAllStories()" class="text-[9px] font-black text-red-500 border border-red-500/30 px-3 py-1 rounded-full hover:bg-red-500 hover:text-white transition">HAPUS SEMUA STORY</button>
+            </div>
+            <div id="story-mod-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <p class="col-span-full text-center text-zinc-700 py-10 font-bold uppercase text-[10px]">Tidak ada story aktif</p>
+            </div>
         </div>
 
     </div>
@@ -46,15 +78,24 @@
         let isM = false;
 
         async function getS() {
-            const r = await fetch(DB + "server_status.json");
-            const d = await r.json(); isM = d ? d.maintenance : false;
-            const box = document.getElementById('st-box');
-            const btn = document.getElementById('st-btn');
-            
-            box.innerText = isM ? "MAINTENANCE" : "ONLINE";
-            box.className = isM ? "text-3xl font-black italic text-red-500" : "text-3xl font-black italic text-green-500";
-            btn.innerText = isM ? "Buka Aplikasi" : "Kunci Aplikasi";
-            btn.className = isM ? "bg-green-600 shadow-green-600/20" : "bg-red-600 shadow-red-600/20";
+            try {
+                const r = await fetch(DB + "server_status.json");
+                const d = await r.json(); 
+                isM = d ? d.maintenance : false;
+                
+                const box = document.getElementById('st-box');
+                const btn = document.getElementById('st-btn');
+                const desc = document.getElementById('st-desc');
+                
+                box.innerText = isM ? "OFFLINE" : "ONLINE";
+                box.className = isM ? "text-4xl font-black italic mb-2 text-red-600" : "text-4xl font-black italic mb-2 text-green-500";
+                desc.innerText = isM ? "Akses user sedang dikunci" : "User dapat mengakses aplikasi";
+                
+                btn.innerText = isM ? "Aktifkan Aplikasi" : "Kunci Aplikasi (Maintenance)";
+                btn.className = isM ? "bg-green-600 text-white shadow-green-600/20" : "bg-red-600 text-white shadow-red-600/20";
+                
+                loadStoryModeration();
+            } catch (e) { console.error("Sync Error"); }
         }
 
         async function toggleM() {
@@ -65,50 +106,65 @@
         async function sendAnn() {
             const t = document.getElementById('ann-t').value;
             const m = document.getElementById('ann-m').value;
-            if(!t || !m) return;
-            await fetch(DB + "announcement.json", { method:'POST', body: JSON.stringify({ title:t, message:m }) });
-            alert("Pengumuman dipublish!");
+            if(!t || !m) return alert("Isi judul dan pesan!");
+            await fetch(DB + "announcement.json", { method:'POST', body: JSON.stringify({ title: t, message: m, time: Date.now() }) });
+            alert("Pengumuman Terkirim!");
             document.getElementById('ann-t').value = ""; document.getElementById('ann-m').value = "";
         }
 
         async function sendDirect() {
             const to = document.getElementById('dev-to').value.trim();
             const msg = document.getElementById('dev-m').value;
-            if(!to || !msg) return;
+            if(!to || !msg) return alert("Isi username target dan pesan!");
             await fetch(DB + "chats.json", { method:'POST', body: JSON.stringify({ from: "ADMIN_DEV", to: to, body: msg, time: Date.now() }) });
-            alert("Pesan Broadcast terkirim ke " + to);
+            alert("Pesan Official terkirim ke " + to);
             document.getElementById('dev-to').value = ""; document.getElementById('dev-m').value = "";
         }
 
-        window.onload = getS;
-    </script>
-</body>
-</html>
-            document.getElementById('tab-chat-btn').className = t==='chat' ? 'px-4 py-2 rounded-xl text-[10px] font-bold bg-zinc-800 text-white border border-white/5' : 'px-4 py-2 rounded-xl text-[10px] font-bold bg-transparent text-zinc-500 border border-white/5';
-            document.getElementById('tab-story-btn').className = t==='story' ? 'px-4 py-2 rounded-xl text-[10px] font-bold bg-zinc-800 text-white border border-white/5' : 'px-4 py-2 rounded-xl text-[10px] font-bold bg-transparent text-zinc-500 border border-white/5';
-            renderMonitor();
+        // STORY MODERATION LOGIC
+        async function loadStoryModeration() {
+            const r = await fetch(DB + "stories.json");
+            const d = await r.json();
+            const list = document.getElementById('story-mod-list');
+            if(!d) {
+                list.innerHTML = `<p class="col-span-full text-center text-zinc-700 py-10 font-bold uppercase text-[10px]">Tidak ada story aktif</p>`;
+                return;
+            }
+            
+            list.innerHTML = Object.keys(d).map(id => {
+                const s = d[id];
+                return `
+                <div class="bg-black p-3 rounded-2xl border border-white/5 relative group">
+                    <div class="aspect-[9/16] rounded-xl overflow-hidden mb-3 bg-zinc-900">
+                        ${s.type === 'video' ? `<video src="${s.media}" class="w-full h-full object-cover opacity-50"></video>` : `<img src="${s.media}" class="w-full h-full object-cover opacity-50">`}
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <button onclick="delStory('${id}')" class="bg-red-600 w-10 h-10 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 transition"><i class="fas fa-trash text-xs"></i></button>
+                        </div>
+                    </div>
+                    <p class="text-[8px] font-black uppercase truncate text-zinc-500">${s.username}</p>
+                </div>`;
+            }).join('');
         }
 
-        // --- INIT ---
-        setInterval(() => { runAutoClean(); renderMonitor(); getStatus(); }, 10000);
-        window.onload = () => { getStatus(); loadAnn(); renderMonitor(); runAutoClean(); };
-    </script>
-</body>
-</html>
-                await fetch(`${BASE_DB}announcement/${id}.json`, { method: 'DELETE' });
-                loadAnnounceList();
+        async function delStory(id) {
+            if(confirm("Hapus story ini?")) {
+                await fetch(`${DB}stories/${id}.json`, { method: 'DELETE' });
+                loadStoryModeration();
             }
         }
 
-        // --- FUNGSI MONITOR CHAT ---
-        async function fetchChats() {
-            try {
-                const res = await fetch(BASE_DB + "chats.json");
-                const data = await res.json();
-                const container = document.getElementById('chat-monitor');
+        async function clearAllStories() {
+            if(confirm("PERINGATAN: Hapus semua story yang ada di database?")) {
+                await fetch(`${DB}stories.json`, { method: 'DELETE' });
+                loadStoryModeration();
+            }
+        }
 
-                if(!data) {
-                    container.innerHTML = `<div class="text-center py-20 text-zinc-800 text-xs italic uppercase tracking-widest">Belum ada aktivitas chat</div>`;
+        window.onload = getS;
+        setInterval(getS, 10000); // Auto refresh status tiap 10 detik
+    </script>
+</body>
+</html>
                     return;
                 }
 
