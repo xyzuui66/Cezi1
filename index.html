@@ -177,4 +177,72 @@
     </script>
 </body>
 </html>
+        // 2. STABLE MUSIC SEARCH (NO-ERROR ENGINE)
+        document.getElementById('m-q').addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                const q = e.target.value.trim();
+                if(!q) return;
+                const resBox = document.getElementById('res-music');
+                resBox.innerHTML = '<div class="col-span-2 py-20 text-center"><i class="fas fa-circle-notch animate-spin text-blue-500"></i></div>';
+                
+                try {
+                    const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&limit=30&entity=song`);
+                    const d = await r.json();
+                    if(d.resultCount === 0) {
+                        resBox.innerHTML = '<p class="col-span-2 text-center text-zinc-600 font-bold text-[10px]">LAGU TIDAK DITEMUKAN</p>';
+                        return;
+                    }
+                    resBox.innerHTML = d.results.map(s => {
+                        const t = s.trackName.replace(/'/g, "");
+                        const a = s.artistName.replace(/'/g, "");
+                        const img = s.artworkUrl100.replace('100x100','600x600');
+                        return `
+                        <div onclick="playMusic('${s.previewUrl}', '${t}', '${img}', '${a}')" class="glass p-4 active:scale-95 transition">
+                            <img src="${img}" class="rounded-2xl mb-3 shadow-lg aspect-square object-cover">
+                            <p class="text-[10px] font-black truncate text-white uppercase">${t}</p>
+                            <p class="text-[7px] font-bold text-zinc-600 truncate uppercase tracking-widest">${a}</p>
+                        </div>`;
+                    }).join('');
+                } catch(e) { resBox.innerHTML = "Error koneksi."; }
+            }
+        });
+
+        // 3. PERSISTENT LOGIN & UI HANDLER
+        function playMusic(url, title, img, artist) {
+            const ae = document.getElementById('ae');
+            const bar = document.getElementById('player-bar');
+            ae.src = url; ae.play();
+            bar.classList.remove('hidden');
+            document.getElementById('p-img').src = img;
+            document.getElementById('p-title').innerText = title;
+            document.getElementById('p-artist').innerText = artist;
+            document.getElementById('p-ico').className = "fas fa-pause";
+        }
+
+        function togglePlayback() {
+            const ae = document.getElementById('ae');
+            const ico = document.getElementById('p-ico');
+            if(ae.paused) { ae.play(); ico.className = "fas fa-pause"; }
+            else { ae.pause(); ico.className = "fas fa-play"; }
+        }
+
+        function tab(t) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav div').forEach(d => d.classList.replace('text-blue-500', 'text-zinc-500'));
+            document.getElementById(`p-${t}`).classList.add('active');
+            document.getElementById(`b-${t}`).classList.replace('text-zinc-500', 'text-blue-500');
+        }
+
+        window.onload = () => {
+            const savedUser = localStorage.getItem('cezi_user_final');
+            if(savedUser) {
+                const u = JSON.parse(savedUser);
+                document.getElementById('my-av').src = u.avatar;
+                document.getElementById('user-name').innerText = u.name;
+            }
+            startSync();
+        };
+    </script>
+</body>
+</html>
 
