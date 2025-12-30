@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CeziRooms v1.4</title>
+    <title>CeziRooms v1.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -15,24 +15,23 @@
         .page { display: none; height: 100%; overflow-y: auto; padding-bottom: 240px; }
         .page.active { display: block; animation: fadeIn 0.2s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-        .notif-dot { position: absolute; top: -2px; right: 10px; width: 10px; height: 10px; background: #FF3B30; border-radius: 50%; border: 2px solid black; }
-        .chat-bubble-me { background: var(--ios-blue); border-radius: 18px 18px 0 18px; align-self: flex-end; max-width: 80%; }
-        .chat-bubble-friend { background: rgba(255,255,255,0.1); border-radius: 18px 18px 18px 0; align-self: flex-start; max-width: 80%; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .chat-bubble-me { background: var(--ios-blue); border-radius: 18px 18px 0 18px; align-self: flex-end; max-width: 80%; padding: 12px; font-size: 13px; font-weight: 600; }
+        .chat-bubble-friend { background: rgba(255,255,255,0.1); border-radius: 18px 18px 18px 0; align-self: flex-start; max-width: 80%; padding: 12px; font-size: 13px; font-weight: 600; }
         .story-ring { padding: 2px; border: 2px solid var(--ios-blue); border-radius: 50%; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="maint-screen" class="fixed inset-0 z-[5000] bg-black flex flex-col items-center justify-center p-10 text-center hidden">
-        <div class="w-20 h-20 bg-orange-500/20 text-orange-500 rounded-full flex items-center justify-center mb-6 animate-pulse"><i class="fas fa-tools text-3xl"></i></div>
-        <h2 class="text-2xl font-black italic uppercase">Server <span class="text-orange-500">Maintenance</span></h2>
-        <p class="text-zinc-500 text-xs mt-4">Mohon maaf, server sedang dalam pemeliharaan. Coba lagi nanti!</p>
+    <div id="maint-screen" class="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-10 text-center hidden">
+        <div class="w-24 h-24 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-6 animate-pulse"><i class="fas fa-lock text-4xl"></i></div>
+        <h2 class="text-2xl font-black italic uppercase italic">Akses <span class="text-red-500">Ditutup</span></h2>
+        <p class="text-zinc-500 text-xs mt-4 leading-relaxed">Server sedang dalam pemeliharaan berkala.<br>Mohon kembali beberapa saat lagi.</p>
     </div>
 
     <div id="story-viewer" class="fixed inset-0 z-[4000] bg-black hidden flex flex-col">
-        <div class="absolute top-0 left-0 right-0 h-1 bg-zinc-800"><div id="story-progress" class="h-full bg-white w-0 transition-all duration-100"></div></div>
-        <div class="p-5 flex justify-between items-center z-10 bg-gradient-to-b from-black/80 to-transparent">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-zinc-800 z-50"><div id="story-progress" class="h-full bg-white w-0 transition-all duration-100"></div></div>
+        <div class="p-5 flex justify-between items-center z-50 bg-gradient-to-b from-black/80 to-transparent">
             <div class="flex items-center gap-3">
                 <img id="story-view-avatar" class="w-10 h-10 rounded-full object-cover border border-white/20">
                 <span id="story-view-user" class="text-sm font-bold"></span>
@@ -44,29 +43,29 @@
 
     <div id="auth-modal" class="fixed inset-0 z-[100] bg-black flex items-center justify-center p-8 hidden">
         <div class="w-full max-w-sm text-center">
-            <h1 class="text-4xl font-black italic tracking-tighter mb-2">CEZI<span class="text-blue-500">ROOMS</span></h1>
-            <input id="login-phone" type="tel" placeholder="Nomor HP" class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-center mb-3 outline-none focus:border-blue-500">
-            <input id="login-name" type="text" placeholder="Username" class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-center mb-6 outline-none focus:border-blue-500">
-            <button onclick="handleAuth()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold active:scale-95 transition">Masuk</button>
+            <h1 class="text-4xl font-black italic tracking-tighter mb-8">CEZI<span class="text-blue-500">ROOMS</span></h1>
+            <input id="login-phone" type="tel" placeholder="Nomor WhatsApp" class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-center mb-3 outline-none focus:border-blue-500">
+            <input id="login-name" type="text" placeholder="Username Kamu" class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-center mb-6 outline-none focus:border-blue-500">
+            <button onclick="handleAuth()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold active:scale-95 transition">MASUK</button>
         </div>
     </div>
 
     <div class="flex flex-col h-full">
-        <header class="p-5 flex justify-between items-center ios-blur border-b border-white/5 shrink-0">
+        <header class="p-5 flex justify-between items-center ios-blur border-b border-white/5 shrink-0 z-40">
             <h1 id="logo-cezi" class="text-xl font-extrabold italic tracking-tighter cursor-pointer">CEZI<span class="text-blue-500">ROOMS</span></h1>
             <img id="user-avatar" src="" class="w-9 h-9 rounded-full border border-white/10 object-cover">
         </header>
 
         <main class="flex-1 overflow-hidden relative">
             <section id="page-music" class="page active p-5">
-                <input id="music-search" type="text" placeholder="Cari lagu & putar..." class="w-full bg-zinc-900 border border-white/5 rounded-2xl px-5 py-4 mb-6 outline-none focus:border-blue-500">
+                <input id="music-search" type="text" placeholder="Cari lagu & putar..." class="w-full bg-zinc-900 border border-white/5 rounded-2xl px-5 py-4 mb-6 outline-none">
                 <div id="music-results" class="grid grid-cols-2 gap-4"></div>
             </section>
 
             <section id="page-social" class="page p-5">
                 <div class="flex gap-4 overflow-x-auto pb-6 no-scrollbar">
                     <div class="flex-shrink-0 flex flex-col items-center gap-1">
-                        <div onclick="document.getElementById('story-input').click()" class="w-16 h-16 rounded-full border-2 border-dashed border-zinc-700 flex items-center justify-center bg-zinc-900 active:scale-90 transition">
+                        <div onclick="document.getElementById('story-input').click()" class="w-16 h-16 rounded-full border-2 border-dashed border-zinc-700 flex items-center justify-center bg-zinc-900">
                             <i class="fas fa-plus text-zinc-500"></i>
                         </div>
                         <span class="text-[9px] font-bold text-zinc-500">Status</span>
@@ -77,27 +76,32 @@
 
                 <div id="social-main">
                     <div class="glass-card p-5 mb-6">
-                        <p class="text-[10px] font-bold text-zinc-500 uppercase mb-3">Tambah Teman</p>
-                        <div class="flex gap-2"><input id="friend-input" type="text" placeholder="Username" class="flex-1 bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm"><button onclick="addFriend()" class="bg-blue-600 px-4 rounded-xl text-xs font-bold transition">Add</button></div>
+                        <div class="flex gap-2">
+                            <input id="friend-input" type="text" placeholder="Tambah username teman" class="flex-1 bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm outline-none">
+                            <button onclick="addFriend()" class="bg-blue-600 px-5 rounded-xl text-xs font-bold">ADD</button>
+                        </div>
                     </div>
                     <div id="friend-list" class="space-y-3"></div>
                 </div>
 
-                <div id="private-chat" class="hidden flex flex-col h-full">
-                    <button onclick="closeChat()" class="mb-4 text-zinc-500 text-sm"><i class="fas fa-chevron-left mr-2"></i> Kembali</button>
-                    <div id="message-display" class="glass-card flex-1 overflow-y-auto p-4 flex flex-col gap-4 mb-4"></div>
-                    <div class="flex gap-2 pb-4"><input id="msg-input" type="text" class="flex-1 bg-zinc-900 rounded-full px-5 py-3 text-sm outline-none"><button onclick="sendMessage()" class="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center transition"><i class="fas fa-paper-plane"></i></button></div>
+                <div id="private-chat" class="hidden fixed inset-0 bg-black z-50 flex flex-col p-5">
+                    <button onclick="closeChat()" class="mb-4 text-zinc-500 text-sm font-bold"><i class="fas fa-chevron-left mr-2"></i> KEMBALI</button>
+                    <div id="message-display" class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 mb-4 no-scrollbar bg-zinc-900/20 rounded-3xl border border-white/5"></div>
+                    <div class="flex gap-2 pb-6">
+                        <input id="msg-input" type="text" placeholder="Ketik pesan..." class="flex-1 bg-zinc-900 rounded-full px-5 py-4 text-sm outline-none border border-white/5">
+                        <button onclick="sendMessage()" class="bg-blue-600 w-14 h-14 rounded-full flex items-center justify-center transition"><i class="fas fa-paper-plane"></i></button>
+                    </div>
                 </div>
             </section>
 
             <section id="page-ai" class="page p-5">
-                <div class="glass-card flex flex-col h-[500px]">
-                    <div id="ai-messages" class="flex-1 overflow-y-auto p-4 space-y-4 text-[11px]">
-                        <div class="bg-blue-600/10 p-3 rounded-xl border border-blue-600/20 text-blue-400 font-bold italic">OMNI-AI: Butuh bantuan? Ketik "Lapor Bug" jika ada kendala.</div>
+                <div class="glass-card flex flex-col h-[480px]">
+                    <div id="ai-messages" class="flex-1 overflow-y-auto p-4 space-y-4 text-[12px]">
+                        <div class="bg-blue-600/10 p-4 rounded-2xl border border-blue-600/20 text-blue-400 font-bold">Omni-AI Aktif. Ketik "Lapor" jika ada kendala sistem.</div>
                     </div>
-                    <div class="p-3 border-t border-white/5 flex gap-2">
+                    <div class="p-3 flex gap-2">
                         <input id="ai-input" type="text" placeholder="Tanya sesuatu..." class="flex-1 bg-black border border-zinc-800 rounded-full px-4 text-xs outline-none">
-                        <button onclick="askOmni()" class="bg-blue-600 w-10 h-10 rounded-full flex items-center justify-center transition"><i class="fas fa-paper-plane text-xs"></i></button>
+                        <button onclick="askOmni()" class="bg-blue-600 w-10 h-10 rounded-full flex items-center justify-center"><i class="fas fa-robot text-xs"></i></button>
                     </div>
                 </div>
             </section>
@@ -108,8 +112,202 @@
             </section>
         </main>
 
-        <div id="mini-player" class="fixed bottom-28 left-4 right-4 h-16 ios-blur border border-white/10 rounded-2xl p-2 flex items-center gap-3 hidden z-50">
-            <img id="player-art" class="w-12 h-12 rounded-lg object-cover">
+        <div id="mini-player" class="fixed bottom-28 left-4 right-4 h-16 ios-blur border border-white/10 rounded-2xl p-2 flex items-center gap-3 hidden z-30 shadow-2xl">
+            <img id="player-art" class="w-12 h-12 rounded-lg object-cover bg-zinc-800">
+            <div class="flex-1 overflow-hidden font-bold text-[10px] truncate" id="player-title"></div>
+            <audio id="main-audio"></audio>
+            <button onclick="togglePlay()" class="w-10 h-10 bg-white text-black rounded-full"><i id="play-icon" class="fas fa-play"></i></button>
+        </div>
+
+        <nav class="h-24 ios-blur border-t border-white/5 flex justify-around items-center px-4 shrink-0 relative z-40">
+            <div onclick="nav('music')" id="tab-music" class="text-blue-500 text-center flex-1 cursor-pointer"><i class="fas fa-music text-lg"></i><p class="text-[8px] mt-1 font-bold">Musik</p></div>
+            <div onclick="nav('social')" id="tab-social" class="text-zinc-500 text-center flex-1 cursor-pointer"><i class="fas fa-user-group text-lg"></i><p class="text-[8px] mt-1 font-bold">Social</p></div>
+            <div onclick="nav('ai')" id="tab-ai" class="text-zinc-500 text-center flex-1 cursor-pointer"><i class="fas fa-robot text-lg"></i><p class="text-[8px] mt-1 font-bold">AI</p></div>
+            <div onclick="nav('announce')" id="tab-announce" class="text-zinc-500 text-center flex-1 cursor-pointer"><i class="fas fa-bell text-lg"></i><p class="text-[8px] mt-1 font-bold">Update</p></div>
+        </nav>
+    </div>
+
+    <script>
+        const BASE_DB = "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app/";
+        const IMGBB_API_KEY = "6798e826477e7cc42b826830f305c48b";
+        let activeChat = null; let storyTimer; let clickCount = 0;
+
+        // --- MASTER MAINTENANCE CHECK ---
+        async function checkMaintenance() {
+            try {
+                const res = await fetch(BASE_DB + "server_status.json");
+                const data = await res.json();
+                document.getElementById('maint-screen').classList.toggle('hidden', !(data && data.maintenance));
+            } catch(e) {}
+        }
+
+        // --- SESSION ---
+        function checkSession() {
+            const sess = localStorage.getItem('cezi_session');
+            if(sess) {
+                const data = JSON.parse(sess);
+                document.getElementById('user-avatar').src = data.avatar;
+                document.getElementById('auth-modal').classList.add('hidden');
+                renderFriends(); startSync();
+            } else {
+                document.getElementById('auth-modal').classList.remove('hidden');
+            }
+        }
+
+        function handleAuth() {
+            const p = document.getElementById('login-phone').value;
+            const u = document.getElementById('login-name').value;
+            if(!p || !u) return alert("Wajib isi data!");
+            const sess = { phone: p, username: u, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${u}`, friends: [] };
+            localStorage.setItem('cezi_session', JSON.stringify(sess));
+            location.reload();
+        }
+
+        // --- STORY SYSTEM ---
+        async function uploadStory(input) {
+            if (!input.files[0]) return;
+            const file = input.files[0];
+            const me = JSON.parse(localStorage.getItem('cezi_session'));
+            const btn = document.querySelector('[onclick*="story-input"]');
+            btn.innerHTML = '<i class="fas fa-spinner animate-spin text-blue-500"></i>';
+
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const fd = new FormData(); fd.append("image", e.target.result.split(',')[1]);
+                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: fd });
+                    const d = await res.json();
+                    saveStory(me, d.data.url, "image");
+                    btn.innerHTML = '<i class="fas fa-plus text-zinc-500"></i>';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                if (file.size > 8 * 1024 * 1024) return alert("Video Max 8MB!");
+                const reader = new FileReader();
+                reader.onload = (e) => { 
+                    saveStory(me, e.target.result, "video"); 
+                    btn.innerHTML = '<i class="fas fa-plus text-zinc-500"></i>';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function saveStory(u, med, type) {
+            await fetch(BASE_DB + "stories.json", { method:'POST', body:JSON.stringify({ username:u.username, avatar:u.avatar, media:med, type:type, time:Date.now() })});
+            loadStories();
+        }
+
+        async function loadStories() {
+            try {
+                const res = await fetch(BASE_DB + "stories.json");
+                const data = await res.json();
+                const cont = document.getElementById('story-container');
+                if(!data) return;
+                const now = Date.now();
+                cont.innerHTML = Object.values(data).filter(s => (now - s.time) < 86400000).map(s => `
+                    <div onclick="viewStory('${s.media}', '${s.username}', '${s.avatar}', '${s.type}')" class="flex-shrink-0 flex flex-col items-center gap-1">
+                        <div class="w-16 h-16 story-ring"><img src="${s.avatar}" class="w-full h-full rounded-full object-cover bg-zinc-900"></div>
+                        <span class="text-[9px] font-bold truncate w-16 text-center text-zinc-500">${s.username}</span>
+                    </div>`).join('');
+            } catch(e) {}
+        }
+
+        function viewStory(med, user, av, type) {
+            const v = document.getElementById('story-viewer');
+            const content = document.getElementById('story-media-content');
+            const prog = document.getElementById('story-progress');
+            document.getElementById('story-view-user').innerText = user;
+            document.getElementById('story-view-avatar').src = av;
+            v.classList.remove('hidden'); prog.style.width = "0%";
+            
+            if(type === "video") {
+                content.innerHTML = `<video id="st-vid" src="${med}" autoplay playsinline class="max-w-full max-h-[80vh]"></video>`;
+                const vid = document.getElementById('st-vid');
+                vid.onended = () => closeStory();
+                vid.ontimeupdate = () => prog.style.width = (vid.currentTime/vid.duration)*100 + "%";
+            } else {
+                content.innerHTML = `<img src="${med}" class="max-w-full max-h-[80vh] object-contain">`;
+                let w = 0; clearInterval(storyTimer);
+                storyTimer = setInterval(() => { w++; prog.style.width = w+"%"; if(w>=100) closeStory(); }, 50);
+            }
+        }
+
+        function closeStory() { document.getElementById('story-viewer').classList.add('hidden'); clearInterval(storyTimer); document.getElementById('story-media-content').innerHTML = ""; }
+
+        // --- NAVIGATION ---
+        function nav(p) {
+            document.querySelectorAll('.page').forEach(e => e.classList.remove('active'));
+            document.getElementById('page-'+p).classList.add('active');
+            document.querySelectorAll('nav div').forEach(e => e.classList.replace('text-blue-500','text-zinc-500'));
+            document.getElementById('tab-'+p).classList.replace('text-zinc-500','text-blue-500');
+            if(p==='social') loadStories();
+            if(p==='announce') renderAnn();
+        }
+
+        // --- CHAT ---
+        async function sendMessage() {
+            const i = document.getElementById('msg-input');
+            if(!i.value.trim() || !activeChat) return;
+            const me = JSON.parse(localStorage.getItem('cezi_session')).username;
+            await fetch(BASE_DB + "chats.json", { method:'POST', body:JSON.stringify({ from:me, to:activeChat, body:i.value, ts:Date.now() })});
+            i.value = ""; renderMessages();
+        }
+
+        async function renderMessages() {
+            if(!activeChat) return;
+            try {
+                const res = await fetch(BASE_DB + "chats.json");
+                const data = await res.json();
+                const me = JSON.parse(localStorage.getItem('cezi_session')).username;
+                const disp = document.getElementById('message-display');
+                if(!data) return;
+                const filt = Object.values(data).filter(m => (m.from===me && m.to===activeChat) || (m.from===activeChat && m.to===me));
+                disp.innerHTML = filt.map(m => `<div class="flex flex-col ${m.from===me?'items-end':'items-start'}"><div class="${m.from===me?'chat-bubble-me':'chat-bubble-friend'}">${m.body}</div></div>`).join('');
+                disp.scrollTop = disp.scrollHeight;
+            } catch(e) {}
+        }
+
+        function addFriend() {
+            const f = document.getElementById('friend-input').value.trim();
+            let s = JSON.parse(localStorage.getItem('cezi_session'));
+            if(!f || (s.friends||[]).includes(f)) return;
+            (s.friends = s.friends || []).push(f);
+            localStorage.setItem('cezi_session', JSON.stringify(s));
+            renderFriends(); document.getElementById('friend-input').value = "";
+        }
+
+        function renderFriends() {
+            const s = JSON.parse(localStorage.getItem('cezi_session'));
+            document.getElementById('friend-list').innerHTML = (s.friends || []).map(f => `
+                <div onclick="openChat('${f}')" class="glass-card p-5 flex justify-between items-center text-sm font-bold active:scale-95 transition">
+                    <span>${f}</span><i class="fas fa-chevron-right text-blue-500"></i>
+                </div>`).join('');
+        }
+
+        function openChat(f) { activeChat = f; document.getElementById('private-chat').classList.remove('hidden'); renderMessages(); }
+        function closeChat() { activeChat = null; document.getElementById('private-chat').classList.add('hidden'); }
+
+        // --- SYNC & START ---
+        function startSync() {
+            setInterval(checkMaintenance, 5000);
+            setInterval(renderMessages, 3000);
+            setInterval(loadStories, 15000);
+        }
+
+        window.onload = () => { checkMaintenance(); checkSession(); };
+        document.getElementById('logo-cezi').onclick = () => { clickCount++; if(clickCount>=5) window.location.href="dev.html"; };
+
+        // MUSIC & OMNI AI (Simplified)
+        document.getElementById('music-search').onkeypress = async (e) => {
+            if(e.key==='Enter') {
+                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(e.target.value)}&limit=10`);
+                const d = await res.json();
+                document.getElementById('music-results').innerHTML = d.results.map(t => `<div onclick="play('${t.previewUrl}','${t.trackName}','${t.artworkUrl100}')" class="glass-card p-3"><img src="${t.artworkUrl100.replace('100x100','300x300')}" class="w-full rounded-xl mb-2"><p class="text-[9px] font-bold truncate">${t.trackName}</p></div>`).join('');
+            }
+        }
+        function play(u,t,a) {
+            const aud = document.getElementById('main-audio'); document.getElementById('player-art').src = a; document.getElementById('player-title').innerText = t;
+            aud.src = u; aud.play(); document.getElementById('mini-player').classList.remove('hidden');             <img id="player-art" class="w-12 h-12 rounded-lg object-cover">
             <div class="flex-1 overflow-hidden font-bold text-[10px] truncate" id="player-title"></div>
             <audio id="main-audio"></audio>
             <button onclick="togglePlay()" class="w-10 h-10 bg-white text-black rounded-full shadow-lg"><i id="play-icon" class="fas fa-play"></i></button>
