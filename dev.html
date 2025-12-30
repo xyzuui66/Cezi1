@@ -2,72 +2,128 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>CeziDev Control v6.1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CeziDev Control Center v1.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background:#050505; color:#eee; font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { background: #050505; color: #eee; font-family: 'Inter', sans-serif; }
         .admin-card { background: rgba(20, 20, 20, 0.8); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .status-online { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
     </style>
 </head>
 <body class="p-4 lg:p-10">
+    
     <header class="flex justify-between items-center mb-10">
         <div>
-            <h1 class="text-2xl font-black text-blue-500 tracking-tighter">CEZIDEV <span class="text-white">PRO</span></h1>
-            <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Database Control Center v6.1</p>
+            <h1 class="text-2xl font-black text-blue-500 tracking-tighter italic">CEZIDEV <span class="text-white">PRO</span></h1>
+            <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Database Control Center v1.0</p>
         </div>
-        <button onclick="clearAllData()" class="bg-red-500/10 text-red-500 text-[10px] font-bold px-4 py-2 rounded-full border border-red-500/20 hover:bg-red-500 hover:text-white transition">WIPE DATABASE</button>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 bg-zinc-900 px-3 py-1.5 rounded-full border border-white/5">
+                <div class="status-online"></div>
+                <span class="text-[10px] font-bold text-zinc-400">SERVER ACTIVE</span>
+            </div>
+            <button onclick="window.location.href='index.html'" class="text-xs font-bold text-zinc-500 hover:text-white transition">Back to App</button>
+        </div>
     </header>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <div class="admin-card p-6 h-fit">
             <h2 class="text-xs font-bold text-blue-500 mb-6 uppercase tracking-widest"><i class="fas fa-bullhorn mr-2"></i> Global Broadcast</h2>
-            <div class="space-y-4">
-                <input id="ann-title" type="text" placeholder="Judul Update" class="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none">
-                <textarea id="ann-msg" placeholder="Pesan untuk semua user..." class="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm h-28 focus:border-blue-500 outline-none"></textarea>
-                <button onclick="sendAnnounce()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold shadow-lg shadow-blue-600/20 transition">Siarkan Sekarang</button>
+            
+            <div class="space-y-4 mb-8">
+                <input id="ann-title" type="text" placeholder="Judul Pengumuman" class="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none transition">
+                <textarea id="ann-msg" placeholder="Isi pesan update..." class="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm h-28 focus:border-blue-500 outline-none transition"></textarea>
+                <button onclick="sendAnnounce()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold shadow-lg shadow-blue-600/20 active:scale-95 transition">Kirim Update</button>
+            </div>
+
+            <hr class="border-zinc-800 mb-4">
+            
+            <h3 class="text-[10px] font-bold text-zinc-500 mb-4 uppercase">Manage Info (Klik sampah untuk hapus)</h3>
+            <div id="dev-ann-list" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                <p class="text-[10px] italic text-zinc-700">Memuat data...</p>
             </div>
         </div>
 
         <div class="admin-card p-6 lg:col-span-2">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xs font-bold text-green-500 uppercase tracking-widest"><i class="fas fa-comments mr-2"></i> Live Chat Monitor</h2>
-                <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    <span class="text-[10px] text-zinc-500 font-bold uppercase">Real-time Encrypted</span>
-                </div>
+                <button onclick="clearAllChats()" class="text-[10px] font-bold text-red-500 hover:underline uppercase">Bersihkan Semua Chat</button>
             </div>
             
-            <div id="chat-monitor" class="space-y-3 h-[500px] overflow-y-auto pr-2">
-                <p class="text-center text-zinc-700 mt-20 text-sm italic">Menghubungkan ke server...</p>
+            <div id="chat-monitor" class="space-y-3 h-[600px] overflow-y-auto pr-2">
+                <p class="text-center text-zinc-800 mt-20 text-sm italic">Menunggu pesan masuk...</p>
             </div>
         </div>
 
     </div>
 
     <script>
+        // Sesuaikan dengan URL Firebase yang sama di index.html
         const BASE_DB = "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app/";
-        
-        // --- BROADCAST SYSTEM ---
+
+        // --- FUNGSI PENGUMUMAN ---
         async function sendAnnounce() {
             const t = document.getElementById('ann-title').value;
             const m = document.getElementById('ann-msg').value;
-            if(!t || !m) return alert("Harap isi semua kolom!");
+            if(!t || !m) return alert("Harap isi Judul dan Pesan!");
 
-            const data = { title: t, message: m, time: new Date().toLocaleString('id-ID'), timestamp: Date.now() };
+            const data = { 
+                title: t, 
+                message: m, 
+                time: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }), 
+                ts: Date.now() 
+            };
 
             try {
-                await fetch(BASE_DB + "announcement.json", { method: 'PUT', body: JSON.stringify(data) });
-                alert("Pengumuman berhasil dikirim!");
+                await fetch(BASE_DB + "announcement.json", { 
+                    method: 'POST', 
+                    body: JSON.stringify(data) 
+                });
                 document.getElementById('ann-title').value = "";
                 document.getElementById('ann-msg').value = "";
-            } catch(e) { alert("Error koneksi!"); }
+                loadAnnounceList();
+            } catch(e) { alert("Gagal mengirim!"); }
         }
 
-        // --- MESSAGE MONITOR SYSTEM ---
+        async function loadAnnounceList() {
+            try {
+                const res = await fetch(BASE_DB + "announcement.json");
+                const data = await res.json();
+                const list = document.getElementById('dev-ann-list');
+
+                if(!data) {
+                    list.innerHTML = "<p class='text-[10px] italic text-zinc-700'>Tidak ada pengumuman aktif.</p>";
+                    return;
+                }
+
+                list.innerHTML = Object.keys(data).reverse().map(id => `
+                    <div class="bg-zinc-900/50 p-3 rounded-xl flex justify-between items-center border border-white/5">
+                        <div class="overflow-hidden">
+                            <p class="text-[10px] font-bold text-white truncate">${data[id].title}</p>
+                            <p class="text-[8px] text-zinc-500">${data[id].time}</p>
+                        </div>
+                        <button onclick="deleteAnn('${id}')" class="text-red-500 hover:text-red-400 p-2">
+                            <i class="fas fa-trash-alt text-xs"></i>
+                        </button>
+                    </div>
+                `).join('');
+            } catch(e) { console.error("Error load info"); }
+        }
+
+        async function deleteAnn(id) {
+            if(confirm("Hapus pengumuman ini dari aplikasi user?")) {
+                await fetch(`${BASE_DB}announcement/${id}.json`, { method: 'DELETE' });
+                loadAnnounceList();
+            }
+        }
+
+        // --- FUNGSI MONITOR CHAT ---
         async function fetchChats() {
             try {
                 const res = await fetch(BASE_DB + "chats.json");
@@ -75,40 +131,51 @@
                 const container = document.getElementById('chat-monitor');
 
                 if(!data) {
-                    container.innerHTML = `<div class="text-center py-20 text-zinc-700 text-xs italic">Belum ada aktivitas percakapan.</div>`;
+                    container.innerHTML = `<div class="text-center py-20 text-zinc-800 text-xs italic uppercase tracking-widest">Belum ada aktivitas chat</div>`;
                     return;
                 }
 
-                const chatArray = Object.values(data).reverse(); // Pesan terbaru di atas
+                // Tampilkan pesan terbaru di paling atas
+                const chatArray = Object.values(data).reverse();
                 
                 container.innerHTML = chatArray.map(c => `
-                    <div class="bg-zinc-900/50 border border-white/5 p-4 rounded-2xl hover:border-blue-500/30 transition">
-                        <div class="flex justify-between mb-2 text-[10px]">
-                            <span class="font-black text-blue-400">FROM: ${c.from}</span>
-                            <span class="font-black text-purple-400">TO: ${c.to}</span>
+                    <div class="bg-zinc-900/30 border border-white/5 p-4 rounded-2xl">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-[9px] font-black text-blue-500 uppercase tracking-tighter">PENGIRIM: ${c.from}</span>
+                            <span class="text-[9px] font-black text-purple-500 uppercase tracking-tighter">PENERIMA: ${c.to}</span>
                         </div>
-                        <div class="bg-black/50 p-3 rounded-lg border border-zinc-800 flex items-center justify-between">
+                        <div class="bg-black/40 p-3 rounded-xl border border-zinc-800/50 flex justify-between items-center">
                             <p class="text-xs text-zinc-300 font-medium">
-                                <i class="fas fa-lock text-[8px] mr-2 text-zinc-600"></i>
-                                ${c.body}
+                                <i class="fas fa-lock text-[8px] mr-2 text-zinc-600"></i>${c.body}
                             </p>
                             <span class="text-[8px] text-zinc-600">${c.time}</span>
                         </div>
                     </div>
                 `).join('');
-
             } catch(e) { console.error("Monitor Error"); }
         }
 
-        async function clearAllData() {
-            if(confirm("PERINGATAN: Ini akan menghapus SEMUA chat dan pengumuman! Lanjutkan?")) {
-                await fetch(BASE_DB + ".json", { method: 'DELETE' });
-                location.reload();
+        async function clearAllChats() {
+            if(confirm("PERINGATAN: Semua riwayat chat di database akan dihapus permanen!")) {
+                await fetch(BASE_DB + "chats.json", { method: 'DELETE' });
+                fetchChats();
             }
         }
 
-        // Jalankan Monitor setiap 3 detik
-        setInterval(fetchChats, 3000);
+        // Jalankan sinkronisasi otomatis
+        setInterval(() => {
+            fetchChats();
+            loadAnnounceList();
+        }, 5000); // Update setiap 5 detik
+
+        // Load pertama kali
+        window.onload = () => {
+            loadAnnounceList();
+            fetchChats();
+        };
+    </script>
+</body>
+</html>
         fetchChats();
     </script>
 </body>
