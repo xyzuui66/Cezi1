@@ -2,113 +2,104 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CeziDev Control Center v1.0</title>
+    <title>CeziDev Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background: #050505; color: #eee; font-family: 'Inter', sans-serif; }
-        .admin-card { background: rgba(20, 20, 20, 0.8); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-        .status-online { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
+        body { background:#050505; color:#eee; font-family: sans-serif; }
+        .admin-card { background: rgba(20, 20, 20, 0.8); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; }
     </style>
 </head>
-<body class="p-4 lg:p-10">
-    
-    <header class="flex justify-between items-center mb-10">
-        <div>
-            <h1 class="text-2xl font-black text-blue-500 tracking-tighter italic">CEZIDEV <span class="text-white">PRO</span></h1>
-            <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Database Control Center v1.0</p>
-        </div>
-        <div class="flex items-center gap-4">
-            <div class="flex items-center gap-2 bg-zinc-900 px-3 py-1.5 rounded-full border border-white/5">
-                <div class="status-online"></div>
-                <span class="text-[10px] font-bold text-zinc-400">SERVER ACTIVE</span>
-            </div>
-            <button onclick="window.location.href='index.html'" class="text-xs font-bold text-zinc-500 hover:text-white transition">Back to App</button>
-        </div>
+<body class="p-6">
+    <header class="flex justify-between items-center mb-8">
+        <h1 class="text-2xl font-black text-blue-500 italic">CEZIDEV <span class="text-white">CONTROL</span></h1>
+        <button onclick="window.location.href='index.html'" class="text-xs text-zinc-500 underline">Ke Aplikasi</button>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <div class="admin-card p-6 h-fit">
-            <h2 class="text-xs font-bold text-blue-500 mb-6 uppercase tracking-widest"><i class="fas fa-bullhorn mr-2"></i> Global Broadcast</h2>
-            
-            <div class="space-y-4 mb-8">
-                <input id="ann-title" type="text" placeholder="Judul Pengumuman" class="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none transition">
-                <textarea id="ann-msg" placeholder="Isi pesan update..." class="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm h-28 focus:border-blue-500 outline-none transition"></textarea>
-                <button onclick="sendAnnounce()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold shadow-lg shadow-blue-600/20 active:scale-95 transition">Kirim Update</button>
-            </div>
+    <div class="admin-card p-6 mb-6 flex justify-between items-center border-orange-500/20">
+        <div>
+            <h2 class="text-xs font-bold text-orange-500 uppercase tracking-widest">Master Server Switch</h2>
+            <p id="stext" class="text-[10px] text-zinc-500">Memuat status...</p>
+        </div>
+        <button id="maint-btn" onclick="toggleMaint()" class="px-6 py-2 rounded-full font-bold text-xs transition active:scale-95">--</button>
+    </div>
 
-            <hr class="border-zinc-800 mb-4">
-            
-            <h3 class="text-[10px] font-bold text-zinc-500 mb-4 uppercase">Manage Info (Klik sampah untuk hapus)</h3>
-            <div id="dev-ann-list" class="space-y-2 max-h-60 overflow-y-auto pr-2">
-                <p class="text-[10px] italic text-zinc-700">Memuat data...</p>
-            </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="admin-card p-6">
+            <h2 class="text-xs font-bold text-blue-500 mb-4 uppercase">Broadcast Info</h2>
+            <input id="ann-t" type="text" placeholder="Judul" class="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm mb-3 outline-none">
+            <textarea id="ann-m" placeholder="Pesan" class="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm h-24 mb-3 outline-none"></textarea>
+            <button onclick="sendAnn()" class="w-full bg-blue-600 py-3 rounded-xl font-bold">Kirim Update</button>
+            <div id="dev-ann-list" class="mt-6 space-y-2"></div>
         </div>
 
-        <div class="admin-card p-6 lg:col-span-2">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xs font-bold text-green-500 uppercase tracking-widest"><i class="fas fa-comments mr-2"></i> Live Chat Monitor</h2>
-                <button onclick="clearAllChats()" class="text-[10px] font-bold text-red-500 hover:underline uppercase">Bersihkan Semua Chat</button>
-            </div>
-            
-            <div id="chat-monitor" class="space-y-3 h-[600px] overflow-y-auto pr-2">
-                <p class="text-center text-zinc-800 mt-20 text-sm italic">Menunggu pesan masuk...</p>
-            </div>
+        <div class="admin-card p-6">
+            <h2 class="text-xs font-bold text-green-500 mb-4 uppercase">Chat Monitor</h2>
+            <div id="chat-mon" class="h-80 overflow-y-auto space-y-2 text-[10px]"></div>
         </div>
-
     </div>
 
     <script>
-        // Sesuaikan dengan URL Firebase yang sama di index.html
         const BASE_DB = "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app/";
+        let isMaint = false;
 
-        // --- FUNGSI PENGUMUMAN ---
-        async function sendAnnounce() {
-            const t = document.getElementById('ann-title').value;
-            const m = document.getElementById('ann-msg').value;
-            if(!t || !m) return alert("Harap isi Judul dan Pesan!");
-
-            const data = { 
-                title: t, 
-                message: m, 
-                time: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }), 
-                ts: Date.now() 
-            };
-
-            try {
-                await fetch(BASE_DB + "announcement.json", { 
-                    method: 'POST', 
-                    body: JSON.stringify(data) 
-                });
-                document.getElementById('ann-title').value = "";
-                document.getElementById('ann-msg').value = "";
-                loadAnnounceList();
-            } catch(e) { alert("Gagal mengirim!"); }
+        async function getStatus() {
+            const res = await fetch(BASE_DB + "server_status.json");
+            const data = await res.json();
+            isMaint = data ? data.maintenance : false;
+            const btn = document.getElementById('maint-btn');
+            btn.innerText = isMaint ? "BUKA SERVER (ONLINE)" : "TUTUP SERVER (MAINTENANCE)";
+            btn.className = isMaint ? "bg-green-600 px-6 py-2 rounded-full font-bold text-xs" : "bg-red-600 px-6 py-2 rounded-full font-bold text-xs";
+            document.getElementById('stext').innerText = isMaint ? "Server sedang ditutup!" : "Server sedang berjalan normal.";
         }
 
-        async function loadAnnounceList() {
-            try {
-                const res = await fetch(BASE_DB + "announcement.json");
-                const data = await res.json();
-                const list = document.getElementById('dev-ann-list');
+        async function toggleMaint() {
+            await fetch(BASE_DB + "server_status.json", { method: 'PUT', body: JSON.stringify({ maintenance: !isMaint }) });
+            getStatus();
+        }
 
-                if(!data) {
-                    list.innerHTML = "<p class='text-[10px] italic text-zinc-700'>Tidak ada pengumuman aktif.</p>";
-                    return;
-                }
+        async function sendAnn() {
+            const t = document.getElementById('ann-t').value;
+            const m = document.getElementById('ann-m').value;
+            if(!t || !m) return;
+            await fetch(BASE_DB + "announcement.json", { method:'POST', body:JSON.stringify({ title:t, message:m, ts:Date.now() }) });
+            document.getElementById('ann-t').value = ""; document.getElementById('ann-m').value = "";
+            loadAnn();
+        }
 
-                list.innerHTML = Object.keys(data).reverse().map(id => `
-                    <div class="bg-zinc-900/50 p-3 rounded-xl flex justify-between items-center border border-white/5">
-                        <div class="overflow-hidden">
-                            <p class="text-[10px] font-bold text-white truncate">${data[id].title}</p>
-                            <p class="text-[8px] text-zinc-500">${data[id].time}</p>
-                        </div>
-                        <button onclick="deleteAnn('${id}')" class="text-red-500 hover:text-red-400 p-2">
+        async function loadAnn() {
+            const res = await fetch(BASE_DB + "announcement.json");
+            const data = await res.json();
+            const list = document.getElementById('dev-ann-list');
+            if(!data) return;
+            list.innerHTML = Object.keys(data).reverse().map(id => `
+                <div class="bg-zinc-900 p-2 rounded-lg flex justify-between items-center">
+                    <span class="text-[10px] truncate">${data[id].title}</span>
+                    <button onclick="delAnn('${id}')" class="text-red-500 text-xs"><i class="fas fa-trash"></i></button>
+                </div>`).join('');
+        }
+
+        async function delAnn(id) {
+            await fetch(`${BASE_DB}announcement/${id}.json`, { method:'DELETE' });
+            loadAnn();
+        }
+
+        async function monChat() {
+            const res = await fetch(BASE_DB + "chats.json");
+            const data = await res.json();
+            if(!data) return;
+            document.getElementById('chat-mon').innerHTML = Object.values(data).reverse().map(c => `
+                <div class="bg-zinc-900/50 p-2 rounded-lg">
+                    <p class="text-blue-500 font-bold">${c.from} ➔ ${c.to}</p>
+                    <p class="text-zinc-400">${c.body}</p>
+                </div>`).join('');
+        }
+
+        setInterval(() => { monChat(); loadAnn(); }, 5000);
+        getStatus(); loadAnn(); monChat();
+    </script>
+</body>
+</html>
                             <i class="fas fa-trash-alt text-xs"></i>
                         </button>
                     </div>
