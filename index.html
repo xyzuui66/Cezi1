@@ -3,112 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>CeziRooms App</title>
+    <title>CeziRooms v1.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        :root { --accent: #007AFF; --bg: #000; }
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: #fff; height: 100dvh; overflow: hidden; margin: 0; }
-        
-        /* App Layout */
-        .app-container { display: flex; flex-direction: column; height: 100%; }
-        .page-content { flex: 1; position: relative; overflow: hidden; }
+        :root { --accent: #007AFF; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; color: #fff; height: 100dvh; overflow: hidden; margin: 0; }
+        .ios-blur { background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
         .page { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: 0.2s; overflow-y: auto; padding-bottom: 120px; }
-        .page.active { opacity: 1; pointer-events: auto; transform: scale(1); }
-        
-        /* UI Components */
-        .ios-blur { background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); }
-        .glass { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; }
-        
-        /* Chat Styling */
-        .bubble { max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; line-height: 1.4; }
+        .page.active { opacity: 1; pointer-events: auto; }
+        .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; }
+        .bubble { max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
         .me { background: var(--accent); align-self: flex-end; border-bottom-right-radius: 4px; }
         .them { background: #262626; align-self: flex-start; border-bottom-left-radius: 4px; }
-        
-        /* Animations */
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .animate-up { animation: slideUp 0.3s ease-out forwards; }
+        .ann-card { border-left: 4px solid var(--accent); background: rgba(0, 122, 255, 0.05); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="maint-layer" class="fixed inset-0 z-[9999] bg-black hidden flex flex-col items-center justify-center p-12 text-center">
-        <div class="w-20 h-20 bg-red-600/20 text-red-600 rounded-full flex items-center justify-center mb-6 animate-pulse"><i class="fas fa-shield-alt text-3xl"></i></div>
-        <h2 class="text-2xl font-black italic uppercase italic">Sistem <span class="text-red-600">Terkuci</span></h2>
-        <p class="text-zinc-500 text-xs mt-4 font-bold uppercase tracking-widest">Maintenance sedang berlangsung.</p>
+    <div id="maint-layer" class="fixed inset-0 z-[9999] bg-black hidden flex flex-col items-center justify-center text-center p-10">
+        <div class="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-4 animate-pulse"><i class="fas fa-lock text-2xl"></i></div>
+        <h2 class="text-xl font-black uppercase italic">Maintenance</h2>
+        <p class="text-zinc-600 text-[10px] mt-2 font-bold uppercase tracking-widest">Server sedang diperbarui oleh Dev.</p>
     </div>
 
     <div id="auth-layer" class="fixed inset-0 z-[9000] bg-black hidden flex items-center justify-center p-10">
         <div class="w-full max-w-xs text-center">
             <h1 class="text-4xl font-black italic mb-10 tracking-tighter">CEZI<span class="text-blue-500">ROOMS</span></h1>
-            <input id="in-phone" type="tel" placeholder="No. WhatsApp" class="w-full bg-zinc-900 border-none rounded-2xl p-5 mb-3 outline-none focus:ring-2 ring-blue-500 transition">
-            <input id="in-name" type="text" placeholder="Username" class="w-full bg-zinc-900 border-none rounded-2xl p-5 mb-8 outline-none focus:ring-2 ring-blue-500 transition">
-            <button onclick="doLogin()" class="w-full bg-blue-600 py-5 rounded-2xl font-black active:scale-95 transition shadow-lg shadow-blue-600/20">MULAI APLIKASI</button>
+            <input id="in-un" type="text" placeholder="Username Anda" class="w-full bg-zinc-900 border-none rounded-2xl p-5 mb-8 outline-none text-center">
+            <button onclick="doLogin()" class="w-full bg-blue-600 py-5 rounded-2xl font-black shadow-lg shadow-blue-600/20">MASUK</button>
         </div>
     </div>
 
-    <div class="app-container">
-        <header class="ios-blur p-5 pt-12 flex justify-between items-center border-b border-white/5 z-50">
-            <span id="logo-dev" class="text-xl font-black italic">CEZI<span class="text-blue-500">ROOMS</span></span>
-            <div class="flex items-center gap-3">
-                <div id="online-indicator" class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <img id="my-avatar" class="w-9 h-9 rounded-full bg-zinc-800 object-cover border border-white/10">
-            </div>
+    <div class="flex flex-col h-full overflow-hidden">
+        <header class="p-5 pt-12 flex justify-between items-center ios-blur border-b border-white/5 z-50">
+            <span id="logo-dev" class="text-xl font-black italic tracking-tighter">CEZI<span class="text-blue-500">ROOMS</span></span>
+            <img id="my-av" class="w-9 h-9 rounded-full bg-zinc-900 object-cover">
         </header>
 
-        <main class="page-content">
+        <main class="flex-1 relative">
             <section id="p-music" class="page active p-5">
-                <div class="glass p-4 mb-6 flex items-center gap-3">
-                    <i class="fas fa-search text-zinc-500"></i>
-                    <input id="music-q" type="text" placeholder="Cari lagu di sini..." class="bg-transparent border-none outline-none text-sm w-full">
-                </div>
+                <input id="m-q" type="text" placeholder="Cari lagu..." class="w-full bg-zinc-900 rounded-2xl p-4 mb-6 outline-none text-sm">
                 <div id="res-music" class="grid grid-cols-2 gap-4"></div>
             </section>
 
             <section id="p-social" class="page p-5">
-                <div class="flex gap-4 overflow-x-auto no-scrollbar mb-8">
-                    <div onclick="document.getElementById('file-story').click()" class="flex-shrink-0 flex flex-col items-center gap-1">
-                        <div class="w-16 h-16 rounded-full border-2 border-dashed border-zinc-800 flex items-center justify-center bg-zinc-900/50">
-                            <i class="fas fa-plus text-zinc-600"></i>
-                        </div>
-                        <span class="text-[9px] font-bold text-zinc-600 uppercase">Update</span>
-                    </div>
-                    <div id="story-list" class="flex gap-4"></div>
-                </div>
-                <input type="file" id="file-story" class="hidden" onchange="upStory(this)">
-
-                <div class="glass p-5 mb-6">
-                    <p class="text-[10px] font-black text-zinc-500 uppercase mb-4 tracking-widest">Daftar Chat</p>
-                    <div class="flex gap-2 mb-4">
-                        <input id="f-name" type="text" placeholder="Username Teman" class="flex-1 bg-black/40 rounded-xl px-4 py-3 text-xs outline-none">
-                        <button onclick="addF()" class="bg-blue-600 px-5 rounded-xl text-[10px] font-black uppercase">Add</button>
-                    </div>
+                <div id="story-list" class="flex gap-4 overflow-x-auto no-scrollbar mb-8"></div>
+                <div class="glass p-5">
+                    <p class="text-[10px] font-black text-zinc-500 uppercase mb-4 tracking-widest">Pesan Pribadi</p>
                     <div id="res-friends" class="space-y-3"></div>
                 </div>
             </section>
 
-            <section id="p-ai" class="page p-5">
-                <div class="glass h-[500px] flex flex-col overflow-hidden">
-                    <div id="ai-chat-box" class="flex-1 overflow-y-auto p-5 space-y-4 text-sm">
-                        <div class="bg-blue-600/10 p-4 rounded-2xl border border-blue-600/20 text-blue-400 font-bold">Omni-AI v2.0 Aktif. Ketik "Lapor" jika ada bug.</div>
-                    </div>
-                    <div class="p-3 bg-black/20 flex gap-2">
-                        <input id="ai-q" type="text" placeholder="Tanya sesuatu..." class="flex-1 bg-black/60 rounded-full px-5 text-xs outline-none">
-                        <button onclick="askAI()" class="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center"><i class="fas fa-robot text-xs"></i></button>
-                    </div>
-                </div>
+            <section id="p-update" class="page p-5">
+                <h2 class="text-xl font-black italic mb-6">INFO <span class="text-blue-500">UPDATE</span></h2>
+                <div id="res-ann" class="space-y-4"></div>
             </section>
         </main>
 
-        <div id="player-bar" class="fixed bottom-28 left-4 right-4 h-16 ios-blur border border-white/10 rounded-2xl p-2 flex items-center gap-3 hidden z-50">
+        <div id="player-bar" class="fixed bottom-28 left-4 right-4 h-16 ios-blur border border-white/10 rounded-2xl p-2 flex items-center gap-3 hidden z-40">
             <img id="p-img" class="w-12 h-12 rounded-lg object-cover">
-            <div class="flex-1 overflow-hidden font-bold text-[10px] truncate" id="p-txt">Memuat...</div>
-            <audio id="audio-engine"></audio>
+            <div id="p-txt" class="flex-1 text-[10px] font-bold truncate uppercase tracking-tighter"></div>
+            <audio id="ae"></audio>
             <button onclick="ctrlMusic()" class="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center"><i id="p-ico" class="fas fa-play"></i></button>
+        </div>
+
+        <nav class="h-24 ios-blur border-t border-white/5 flex justify-around items-center z-50">
+            <div onclick="tab('music')" id="btn-music" class="text-blue-500 text-center flex-1 cursor-pointer"><i class="fas fa-compact-disc text-xl"></i><p class="text-[8px] mt-1 font-bold">MUSIK</p></div>
+            <div onclick="tab('social')" id="btn-social" class="text-zinc-500 text-center flex-1 cursor-pointer"><i class="fas fa-comment text-xl"></i><p class="text-[8px] mt-1 font-bold">CHAT</p></div>
+            <div onclick="tab('update')" id="btn-update" class="text-zinc-500 text-center flex-1 cursor-pointer"><i class="fas fa-bullhorn text-xl"></i><p class="text-[8px] mt-1 font-bold">UPDATE</p></div>
+        </nav>
+    </div>
+
+    <div id="chat-ui" class="fixed inset-0 bg-black z-[100] hidden flex flex-col p-5 pt-12">
+        <div class="flex items-center gap-4 mb-6">
+            <button onclick="closeChat()" class="text-zinc-500"><i class="fas fa-chevron-left text-xl"></i></button>
+            <h2 id="chat-un" class="text-sm font-black italic text-blue-500 uppercase tracking-widest"></h2>
+        </div>
+        <div id="chat-box" class="flex-1 overflow-y-auto flex flex-col gap-3 p-2 no-scrollbar"></div>
+        
+        <div id="chat-input-area" class="flex gap-2 pb-8 mt-4 transition-all">
+            <input id="chat-in" type="text" placeholder="Ketik pesan..." class="flex-1 bg-zinc-900 rounded-2xl px-5 py-4 text-sm outline-none">
+            <button onclick="sendMsg()" class="bg-blue-600 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/20"><i class="fas fa-paper-plane"></i></button>
+        </div>
+        <p id="chat-lock-msg" class="hidden text-center text-zinc-600 text-[10px] font-bold uppercase pb-10 tracking-widest">Pesan ini dari Developer. Balasan dinonaktifkan.</p>
+    </div>
+
+    <script>
+        const DB = "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app/";
+        let me = null; let activeF = null; let clickC = 0;
+
+        async function api(p, m='GET', b=null) {
+            const o = { method: m }; if(b) o.body = JSON.stringify(b);
+            const r = await fetch(DB + p + ".json", o); return await r.json();
+        }
+
+        // --- CORE ---
+        async function sync() {
+            const st = await api("server_status");
+            document.getElementById('maint-layer').classList.toggle('hidden', !(st && st.maintenance));
+            if(activeF) renderChat();
+            loadAnn();
+        }
+
+        function tab(t) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('p-'+t).classList.add('active');
+            document.querySelectorAll('nav div').forEach(d => d.classList.replace('text-blue-500','text-zinc-500'));
+            document.getElementById('btn-'+t).classList.replace('text-zinc-500','text-blue-500');
+        }
+
+        // --- AUTH ---
+        function checkSession() {
+            const s = localStorage.getItem('cezi_user');
+            if(s) { 
+                me = JSON.parse(s); 
+                document.getElementById('my-av').src = me.avatar;
+                document.getElementById('auth-layer').classList.add('hidden');
+                startApp();
+            } else { document.getElementById('auth-layer').classList.remove('hidden'); }
+        }
+
+        function doLogin() {
+            const u = document.getElementById('in-un').value.trim();
+            if(!u) return;
+            me = { username: u, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${u}`, friends: ["ADMIN_DEV"] };
+            localStorage.setItem('cezi_user', JSON.stringify(me));
+            location.reload();
+        }
+
+        // --- CHAT ---
+        function openChat(f) {
+            activeF = f;
+            document.getElementById('chat-un').innerText = f;
+            document.getElementById('chat-ui').classList.remove('hidden');
+            
+            // FITUR PESAN SEARAH: Jika chat dari Dev, kunci inputnya
+            const isDev = (f === "ADMIN_DEV");
+            document.getElementById('chat-input-area').classList.toggle('hidden', isDev);
+            document.getElementById('chat-lock-msg').classList.toggle('hidden', !isDev);
+            
+            renderChat();
+        }
+
+        function closeChat() { activeF = null; document.getElementById('chat-ui').classList.add('hidden'); }
+
+        async function renderChat() {
+            const data = await api("chats"); if(!data) return;
+            const filtered = Object.values(data).filter(m => (m.from === me.username && m.to === activeF) || (m.from === activeF && m.to === me.username));
+            const box = document.getElementById('chat-box');
+            box.innerHTML = filtered.map(m => `<div class="bubble ${m.from === me.username ? 'me' : 'them'}">${m.body}</div>`).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function sendMsg() {
+            const i = document.getElementById('chat-in'); if(!i.value.trim()) return;
+            await api("chats", 'POST', { from: me.username, to: activeF, body: i.value, time: Date.now() });
+            i.value = ""; renderChat();
+        }
+
+        // --- ANNOUNCEMENT ---
+        async function loadAnn() {
+            const data = await api("announcement"); if(!data) return;
+            const res = document.getElementById('res-ann');
+            res.innerHTML = Object.values(data).reverse().map(a => `
+                <div class="glass p-5 ann-card">
+                    <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">Pemberitahuan</p>
+                    <p class="text-sm font-bold mb-1">${a.title}</p>
+                    <p class="text-[11px] text-zinc-500 leading-relaxed font-medium">${a.message}</p>
+                </div>`).join('');
+        }
+
+        // --- MUSIC ---
+        document.getElementById('m-q').onkeypress = async (e) => {
+            if(e.key === 'Enter') {
+                const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(e.target.value)}&limit=10`);
+                const d = await r.json();
+                document.getElementById('res-music').innerHTML = d.results.map(t => `
+                    <div onclick="playMusic('${t.previewUrl}','${t.trackName}','${t.artworkUrl100}')" class="glass p-3 active:scale-95 transition">
+                        <img src="${t.artworkUrl100.replace('100x100','400x400')}" class="w-full rounded-xl mb-3">
+                        <p class="text-[9px] font-black truncate uppercase tracking-tighter">${t.trackName}</p>
+                    </div>`).join('');
+            }
+        };
+
+        function playMusic(u, t, a) {
+            const a_e = document.getElementById('ae'); a_e.src = u; a_e.play();
+            document.getElementById('p-img').src = a; document.getElementById('p-txt').innerText = t;
+            document.getElementById('player-bar').classList.remove('hidden');
+            document.getElementById('p-ico').className = "fas fa-pause";
+        }
+
+        function ctrlMusic() {
+            const a_e = document.getElementById('ae');
+            if(a_e.paused) { a_e.play(); document.getElementById('p-ico').className = "fas fa-pause"; }
+            else { a_e.pause(); document.getElementById('p-ico').className = "fas fa-play"; }
+        }
+
+        // --- START ---
+        function startApp() {
+            document.getElementById('res-friends').innerHTML = me.friends.map(f => `
+                <div onclick="openChat('${f}')" class="bg-zinc-900/40 p-5 rounded-2xl flex justify-between items-center active:scale-95 transition border border-white/5">
+                    <span class="text-xs font-black uppercase italic">${f === 'ADMIN_DEV' ? 'Official CeziDev' : f}</span>
+                    <i class="fas fa-chevron-right text-blue-500 text-[10px]"></i>
+                </div>`).join('');
+            sync(); setInterval(sync, 5000);
+        }
+
+        document.getElementById('logo-dev').onclick = () => { clickC++; if(clickC>=5) window.location.href="dev.html"; };
+        window.onload = checkSession;
+    </script>
+</body>
+</html>
         </div>
 
         <nav class="h-24 ios-blur border-t border-white/5 flex justify-around items-center px-6 shrink-0 z-50">
