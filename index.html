@@ -2,113 +2,68 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CeziRooms v2.9 - Premium</title>
+    <title>CeziDev Master v3.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        :root { --accent: #007AFF; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; color: #fff; height: 100dvh; overflow: hidden; margin: 0; }
-        .ios-blur { background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); }
-        .page { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: 0.3s; overflow-y: auto; padding-bottom: 150px; }
-        .page.active { opacity: 1; pointer-events: auto; }
-        .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; }
-        .bubble { max-width: 85%; padding: 12px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
-        .me { background: var(--accent); align-self: flex-end; border-bottom-right-radius: 4px; }
-        .them { background: #262626; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .ai-bubble { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); align-self: flex-start; border-bottom-left-radius: 4px; }
-        .story-ring { padding: 2px; background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); border-radius: 50%; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        body { background: #000; color: #fff; font-family: sans-serif; }
+        .card { background: #111; border: 1px solid #222; padding: 20px; border-radius: 20px; }
     </style>
 </head>
-<body>
-
-    <div id="global-loader" class="fixed inset-0 z-[20000] bg-black/90 hidden flex-col items-center justify-center backdrop-blur-md">
-        <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-[9px] font-black uppercase tracking-widest text-blue-500">Processing Media...</p>
-    </div>
-
-    <div class="flex flex-col h-full overflow-hidden">
-        <header class="p-5 pt-12 flex justify-between items-center ios-blur border-b border-white/5 z-50">
-            <span id="logo-dev" class="text-xl font-black italic tracking-tighter cursor-pointer">CEZI<span class="text-blue-500">ROOMS</span></span>
-            <img id="my-av" class="w-9 h-9 rounded-full bg-zinc-900 border border-white/10 object-cover">
-        </header>
-
-        <main class="flex-1 relative">
-            
-            <section id="p-music" class="page active p-5 no-scrollbar">
-                <div class="glass p-4 mb-6 flex items-center gap-3">
-                    <i class="fas fa-search text-zinc-600"></i>
-                    <input id="m-q" type="text" placeholder="Cari lagu..." class="bg-transparent border-none outline-none text-sm w-full">
-                </div>
-                <div id="res-music" class="grid grid-cols-2 gap-4"></div>
-            </section>
-
-            <section id="p-social" class="page p-5 no-scrollbar">
-                <h2 class="text-lg font-black italic mb-4 uppercase tracking-tighter">Cerita <span class="text-blue-500">Terbaru</span></h2>
-                <div class="flex gap-4 overflow-x-auto no-scrollbar mb-8 py-2">
-                    <div onclick="document.getElementById('file-story').click()" class="flex-shrink-0 flex flex-col items-center gap-1">
-                        <div class="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center border-2 border-dashed border-zinc-700"><i class="fas fa-plus text-zinc-500"></i></div>
-                        <span class="text-[8px] font-black uppercase text-zinc-500">Update</span>
-                    </div>
-                    <div id="story-list" class="flex gap-4"></div>
-                </div>
-                <input type="file" id="file-story" class="hidden" accept="image/*,video/*" onchange="upStory(this)">
-
-                <div class="glass p-6 mt-4">
-                    <h3 class="text-[10px] font-black text-blue-500 uppercase mb-4 tracking-widest">Temukan Teman</h3>
-                    <div class="flex gap-2">
-                        <input id="f-query" type="text" placeholder="Username / No HP" class="flex-1 bg-black/40 rounded-xl px-4 py-3 text-xs outline-none">
-                        <button onclick="addF()" class="bg-blue-600 px-6 rounded-xl text-[10px] font-black uppercase">Add</button>
-                    </div>
-                </div>
-            </section>
-
-            <section id="p-chatlist" class="page p-5 no-scrollbar">
-                <h2 class="text-lg font-black italic mb-6 uppercase tracking-tighter">Pesan <span class="text-blue-500">Pribadi</span></h2>
-                <div id="res-friends" class="space-y-3"></div>
-            </section>
-
-            <section id="p-ai" class="page flex flex-col h-full p-0">
-                <div class="p-5 border-b border-white/5">
-                    <h2 class="text-lg font-black italic uppercase tracking-tighter">Cezi <span class="text-indigo-500">Assistant</span></h2>
-                    <p class="text-[8px] font-bold text-zinc-500 uppercase tracking-widest">Powered by Gemini AI</p>
-                </div>
-                <div id="ai-box" class="flex-1 overflow-y-auto p-5 flex flex-col gap-4 no-scrollbar">
-                    <div class="ai-bubble bubble">Halo! Saya Cezi AI. Ada yang bisa saya bantu hari ini?</div>
-                </div>
-                <div class="p-5 pb-32">
-                    <div class="flex gap-2 bg-zinc-900 rounded-2xl p-2 border border-white/5">
-                        <input id="ai-in" type="text" placeholder="Tanya sesuatu..." class="flex-1 bg-transparent px-3 py-2 text-sm outline-none">
-                        <button onclick="askAI()" class="bg-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center"><i class="fas fa-paper-plane text-xs"></i></button>
-                    </div>
-                </div>
-            </section>
-
-            <section id="p-update" class="page p-5"><div id="res-ann" class="space-y-4"></div></section>
-
-        </main>
-
-        <div id="player-bar" class="fixed bottom-28 left-4 right-4 h-16 ios-blur border border-white/10 rounded-2xl p-2 flex items-center gap-3 hidden z-40">
-            <img id="p-img" class="w-12 h-12 rounded-lg object-cover">
-            <div id="p-txt" class="flex-1 text-[10px] font-black truncate uppercase text-blue-500"></div>
-            <audio id="ae"></audio>
-            <button onclick="ctrlMusic()" class="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center"><i id="p-ico" class="fas fa-play"></i></button>
+<body class="p-6">
+    <div class="max-w-md mx-auto space-y-6">
+        <h1 class="text-2xl font-black italic text-blue-500">DEV CONTROL</h1>
+        
+        <div class="card">
+            <h2 class="text-xs font-bold uppercase text-zinc-500 mb-4">Server Status</h2>
+            <div id="st-box" class="text-4xl font-black mb-4">LOADING...</div>
+            <button onclick="toggleM()" id="st-btn" class="w-full py-4 rounded-xl font-bold uppercase text-xs transition active:scale-95"></button>
         </div>
 
-        <nav class="h-24 ios-blur border-t border-white/5 flex justify-around items-center z-50">
-            <div onclick="tab('music')" id="btn-music" class="text-blue-500 flex-1 text-center cursor-pointer">
-                <i class="fas fa-compact-disc text-lg"></i><p class="text-[7px] mt-1 font-black">MUSIK</p>
-            </div>
-            <div onclick="tab('social')" id="btn-social" class="text-zinc-500 flex-1 text-center cursor-pointer">
-                <i class="fas fa-users text-lg"></i><p class="text-[7px] mt-1 font-black">SOSIAL</p>
-            </div>
-            <div onclick="tab('chatlist')" id="btn-chatlist" class="text-zinc-500 flex-1 text-center cursor-pointer">
-                <i class="fas fa-comment-alt text-lg"></i><p class="text-[7px] mt-1 font-black">CHATS</p>
-            </div>
-            <div onclick="tab('ai')" id="btn-ai" class="text-zinc-500 flex-1 text-center cursor-pointer">
-                <i class="fas fa-robot text-lg"></i><p class="text-[7px] mt-1 font-black">AI</p>
+        <div class="card">
+            <h2 class="text-xs font-bold uppercase text-zinc-500 mb-2">Broadcast Update</h2>
+            <input id="ann-t" type="text" placeholder="Judul" class="w-full bg-black border border-zinc-800 p-3 rounded-lg mb-2 outline-none">
+            <textarea id="ann-m" placeholder="Isi pesan..." class="w-full bg-black border border-zinc-800 p-3 rounded-lg mb-3 outline-none"></textarea>
+            <button onclick="sendAnn()" class="w-full bg-blue-600 py-3 rounded-lg font-bold text-[10px] uppercase">Publish Info</button>
+        </div>
+    </div>
+
+    <script>
+        const DB = "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app/";
+        let isM = false;
+
+        async function getStatus() {
+            const r = await fetch(DB + "status.json");
+            const d = await r.json();
+            isM = d ? d.maintenance : false;
+            
+            const box = document.getElementById('st-box');
+            const btn = document.getElementById('st-btn');
+            
+            box.innerText = isM ? "LOCKED" : "ACTIVE";
+            box.className = isM ? "text-4xl font-black mb-4 text-red-600" : "text-4xl font-black mb-4 text-green-500";
+            
+            btn.innerText = isM ? "Buka Aplikasi" : "Kunci Aplikasi";
+            btn.className = isM ? "w-full py-4 rounded-xl font-bold uppercase text-xs bg-green-600" : "w-full py-4 rounded-xl font-bold uppercase text-xs bg-red-600";
+        }
+
+        async function toggleM() {
+            await fetch(DB + "status.json", { method:'PUT', body: JSON.stringify({ maintenance: !isM }) });
+            getStatus();
+        }
+
+        async function sendAnn() {
+            const t = document.getElementById('ann-t').value;
+            const m = document.getElementById('ann-m').value;
+            if(!t || !m) return alert("Isi data!");
+            await fetch(DB + "announcement.json", { method:'POST', body: JSON.stringify({ title: t, message: m, time: Date.now() }) });
+            alert("Terkirim!");
+        }
+
+        setInterval(getStatus, 2000);
+        getStatus();
+    </script>
+</body>
+</html>
             </div>
             <div onclick="tab('update')" id="btn-update" class="text-zinc-500 flex-1 text-center cursor-pointer">
                 <i class="fas fa-bullhorn text-lg"></i><p class="text-[7px] mt-1 font-black">INFO</p>
