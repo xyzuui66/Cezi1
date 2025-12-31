@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CeziRooms Trials - 2H Pass</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; color: #fff; height: 100dvh; overflow: hidden; margin: 0; }
+        #expired-screen, #trial-login { position: fixed; inset: 0; background: #000; z-index: 100000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
+        .locked { filter: blur(8px); opacity: 0.3; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div id="trial-login" style="display: flex;">
+        <h1 class="text-3xl font-black italic uppercase mb-2">Cezi<span class="text-blue-500">Trials</span></h1>
+        <p class="text-[9px] text-zinc-500 uppercase tracking-widest mb-10">Mulai Uji Coba 2 Jam Anda</p>
+        <input id="trial-name" type="text" placeholder="Masukkan Nickname" class="w-full max-w-xs p-5 rounded-2xl bg-zinc-900 border border-white/10 text-center font-bold mb-4 outline-none">
+        <button onclick="startTrial()" class="w-full max-w-xs bg-blue-600 py-5 rounded-2xl font-black uppercase text-xs">Aktivasi Uji Coba</button>
+    </div>
+
+    <div id="expired-screen">
+        <i class="fas fa-history text-5xl text-blue-600 mb-6"></i>
+        <h1 class="text-2xl font-black uppercase">Waktu Habis</h1>
+        <p class="text-zinc-500 text-[10px] font-bold mt-4 uppercase px-10">Trial perangkat Anda sudah berakhir. Silakan beralih ke CeziRooms Real APK.</p>
+        <button onclick="location.reload()" class="mt-8 text-blue-500 text-[9px] font-black uppercase underline">Muat Ulang Halaman</button>
+    </div>
+
+    <div class="flex flex-col h-full">
+        <header class="p-6 pt-12 flex justify-between items-center border-b border-white/5">
+            <span class="text-xl font-black uppercase italic">Cezi<span class="text-blue-500">Rooms</span></span>
+            <div class="bg-blue-600/10 border border-blue-500/30 px-4 py-1 rounded-full"><p id="timer" class="text-[10px] font-black text-blue-500">02:00:00</p></div>
+        </header>
+        <main class="flex-1 p-6 space-y-6 overflow-y-auto no-scrollbar pb-20">
+            <div class="bg-zinc-900/40 p-6 rounded-3xl border border-white/5">
+                <p class="text-[8px] font-black text-blue-500 uppercase mb-4">Real-time Chat Preview</p>
+                <div id="chat-preview" class="space-y-3 text-[11px] font-bold text-zinc-500 italic">Sinkronisasi pesan...</div>
+            </div>
+            <div class="locked bg-zinc-900 p-8 rounded-3xl border border-white/5 text-center"><i class="fas fa-lock mb-2"></i><p class="text-[8px] font-black uppercase">Fitur Premium Dikunci</p></div>
+        </main>
+    </div>
+
+    <script>
+        const DB = "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app/";
+        const LIMIT = 2 * 60 * 60 * 1000;
+        let deviceID = localStorage.getItem('cezi_dev_id') || 'T-' + Math.random().toString(36).substr(2,8).toUpperCase();
+        localStorage.setItem('cezi_dev_id', deviceID);
+
+        async function startTrial() {
+            const n = document.getElementById('trial-name').value;
+            if(!n) return alert("Isi nama dulu!");
+            const start = Date.now();
+            const payload = { name: n, startTime: start, deviceID: deviceID, type: 'trial', regAt: new Date().toLocaleString() };
+            localStorage.setItem('cezi_trial_data', JSON.stringify(payload));
+            await fetch(`${DB}trials_access/${deviceID}.json`, { method: 'PUT', body: JSON.stringify(payload) });
+            location.reload();
+        }
+
+        function runTimer(start) {
+            setInterval(() => {
+                const rem = LIMIT - (Date.now() - start);
+                if(rem <= 0) { document.getElementById('expired-screen').style.display = 'flex'; localStorage.setItem('expired', 'true'); }
+                else {
+                    const h = Math.floor(rem/3600000), m = Math.floor((rem%3600000)/60000), s = Math.floor((rem%60000)/1000);
+                    document.getElementById('timer').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+                }
+            }, 1000);
+        }
+
+        window.onload = async () => {
+            const local = JSON.parse(localStorage.getItem('cezi_trial_data'));
+            if(local) {
+                const r = await fetch(`${DB}trials_access/${deviceID}.json`);
+                const d = await r.json();
+                if(d) { document.getElementById('trial-login').style.display = 'none'; runTimer(d.startTime); }
+            }
+            setInterval(async () => {
+                const r = await fetch(`${DB}global_chat.json?limitToLast=4`);
+                const d = await r.json();
+                if(d) document.getElementById('chat-preview').innerHTML = Object.values(d).map(c => `<p><span class="text-blue-500">@${c.n}:</span> ${c.m}</p>`).join('');
+            }, 3000);
+        };
+    </script>
+</body>
+</html>
+              
