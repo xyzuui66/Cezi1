@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CeziRooms v12.5 - Secure App</title>
+    <title>CeziRooms v12.7 - Titanium Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,103 +12,242 @@
         .ios-blur { background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); }
         .page { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); transform: translateY(10px); overflow-y: auto; padding-bottom: 160px; }
         .page.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 28px; }
-        input { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
-        #video-preview { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 3px solid #3b82f6; margin: 0 auto; transform: scaleX(-1); }
-        #ban-screen { z-index: 999999; display: none; background: #000; position: fixed; inset: 0; flex-direction: column; align-items: center; justify-content: center; }
+        .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 30px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        input, textarea { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
+        #ban-screen, #maint-screen { z-index: 999999; display: none; background: #000; position: fixed; inset: 0; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .msg-pop { animation: msgPop 0.3s ease-out; }
+        @keyframes msgPop { from { opacity: 0; transform: translateY(10px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
     </style>
 </head>
 <body>
 
-    <div id="ban-screen" class="text-center p-10">
+    <div id="ban-screen">
         <i class="fas fa-user-slash text-6xl text-red-600 mb-6"></i>
-        <h1 class="text-2xl font-black uppercase">Device Banned</h1>
-        <p class="text-zinc-500 text-xs mt-4">Akses Anda telah diputus secara real-time oleh pengembang karena pelanggaran keamanan.</p>
+        <h1 class="text-2xl font-black uppercase tracking-tighter">Akses Dibatasi</h1>
+        <p class="text-zinc-500 text-[10px] font-bold mt-4 px-10 uppercase tracking-[0.3em]">Device Anda telah diblokir secara permanen</p>
+    </div>
+
+    <div id="maint-screen">
+        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-6"></div>
+        <h1 class="text-xl font-black uppercase italic">System Update</h1>
+        <p class="text-zinc-500 text-[9px] font-bold uppercase mt-2">Sedang Diperbaiki oleh Web Dev</p>
     </div>
 
     <div id="auth-layer" class="fixed inset-0 z-[10000] bg-black hidden flex flex-col items-center justify-center p-8 overflow-y-auto">
-        <h1 class="text-3xl font-black italic mb-2 uppercase">Cezi<span class="text-blue-500">Rooms</span></h1>
-        <p class="text-[8px] font-black text-zinc-500 tracking-[0.4em] mb-10 uppercase text-center">Biometric Security Enabled</p>
+        <h1 class="text-4xl font-black italic mb-2 uppercase tracking-tighter">Cezi<span class="text-blue-500">Rooms</span></h1>
+        <p class="text-[9px] font-black text-zinc-600 tracking-[0.5em] mb-10 uppercase text-center">Cloud Security v12.7</p>
         
-        <div id="face-box" class="hidden text-center mb-8">
-            <video id="video" autoplay playsinline id="video-preview" class="w-[180px] h-[180px] rounded-full mx-auto border-4 border-blue-600 object-cover"></video>
-            <p class="text-[9px] font-black text-blue-500 mt-4 animate-pulse">POSISIKAN WAJAH ANDA DI LINGKARAN</p>
+        <div class="w-full max-w-xs space-y-3">
+            <input id="reg-name" type="text" placeholder="Username" class="w-full p-5 rounded-2xl outline-none font-bold text-center text-sm">
+            <input id="reg-phone" type="number" placeholder="Nomor HP (62...)" class="w-full p-5 rounded-2xl outline-none font-bold text-center text-sm">
+            <input id="reg-email" type="email" placeholder="Alamat Email" class="w-full p-5 rounded-2xl outline-none font-bold text-center text-sm">
+            <input id="reg-pass" type="password" placeholder="Sandi Keamanan" class="w-full p-5 rounded-2xl outline-none font-bold text-center text-sm">
+            <button onclick="handleLogin()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] shadow-xl shadow-blue-600/20 active:scale-95 transition">Daftar & Masuk</button>
         </div>
-
-        <div id="form-box" class="w-full max-w-xs space-y-3 text-center">
-            <input id="reg-name" type="text" placeholder="Username" class="w-full p-4 rounded-xl font-bold text-center">
-            <input id="reg-phone" type="number" placeholder="Nomor HP (62...)" class="w-full p-4 rounded-xl font-bold text-center">
-            <input id="reg-email" type="email" placeholder="Email" class="w-full p-4 rounded-xl font-bold text-center">
-            <input id="reg-pass" type="password" placeholder="Sandi Buatan" class="w-full p-4 rounded-xl font-bold text-center">
-            <button onclick="openCamera()" id="btn-cam" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-xs shadow-xl">Scan Wajah & Daftar</button>
-            <button onclick="completeAuth()" id="btn-done" class="hidden w-full bg-green-600 py-5 rounded-2xl font-black uppercase text-xs shadow-xl">Konfirmasi Wajah</button>
-        </div>
-        <canvas id="canvas" class="hidden"></canvas>
     </div>
 
     <div class="flex flex-col h-full">
         <header class="p-6 pt-12 flex justify-between items-center ios-blur border-b border-white/5 z-50">
             <span class="text-xl font-black italic tracking-tighter uppercase">Cezi<span class="text-blue-500">Rooms</span></span>
-            <div id="status-ind" class="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div class="flex items-center gap-3">
+                <div class="text-right hidden sm:block">
+                    <p id="nav-name" class="text-[10px] font-black uppercase"></p>
+                    <p class="text-[7px] text-green-500 font-bold uppercase tracking-widest">Encrypted</p>
+                </div>
+                <img id="my-av" src="" class="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 object-cover">
+            </div>
         </header>
 
         <main class="flex-1 relative">
             <section id="p-chat" class="page active p-5 no-scrollbar">
-                <div id="res-chat-global" class="space-y-4 mb-32"></div>
+                <div id="res-chat-global" class="space-y-4 mb-32 pt-2"></div>
                 <div class="fixed bottom-28 left-4 right-4 flex gap-2">
-                    <input id="msg-global" type="text" placeholder="Ketik pesan..." class="flex-1 p-5 rounded-2xl outline-none glass font-bold text-sm">
-                    <button onclick="sendGlobal()" class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center"><i class="fas fa-paper-plane"></i></button>
+                    <input id="msg-global" type="text" placeholder="Ketik pesan real-time..." class="flex-1 p-5 rounded-2xl outline-none glass font-bold text-sm shadow-2xl">
+                    <button onclick="sendGlobal()" class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition"><i class="fas fa-paper-plane"></i></button>
                 </div>
+            </section>
+
+            <section id="p-info" class="page p-5 no-scrollbar">
+                <h2 class="text-xl font-black italic mb-6 uppercase tracking-tighter">Official <span class="text-blue-500 text-[10px] ml-2 animate-pulse font-bold tracking-widest uppercase border border-blue-500/30 px-2 py-1 rounded">Live</span></h2>
+                <div id="res-ann" class="space-y-4"></div>
+            </section>
+
+            <section id="p-music" class="page p-5 no-scrollbar">
+                <div class="glass p-4 mb-6 flex items-center gap-3">
+                    <i class="fas fa-search text-zinc-600"></i>
+                    <input id="m-q" type="text" placeholder="Cari Lagu..." class="bg-transparent outline-none text-sm w-full font-bold">
+                </div>
+                <div id="res-music" class="grid grid-cols-2 gap-4"></div>
+            </section>
+
+            <section id="p-social" class="page p-5 no-scrollbar">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-black italic uppercase">Social</h2>
+                    <button onclick="createGroup()" class="bg-blue-600 text-[9px] font-black px-4 py-2 rounded-full uppercase">Buat Grup</button>
+                </div>
+                <div class="space-y-4" id="res-groups"></div>
+                <hr class="border-white/5 my-6">
+                <div class="flex gap-2 mb-4">
+                    <input id="f-q" type="number" placeholder="Cari Nomor HP (62...)" class="flex-1 p-4 rounded-xl glass text-xs font-bold outline-none">
+                    <button onclick="findFriend()" class="bg-white text-black px-6 rounded-xl font-black text-[10px]">CARI</button>
+                </div>
+                <div id="res-friends" class="space-y-3"></div>
             </section>
         </main>
 
         <nav class="h-24 ios-blur border-t border-white/5 flex justify-around items-center z-[100]">
-            <div onclick="tab('chat')" class="text-blue-500 flex-1 text-center py-4"><i class="fas fa-comments text-xl"></i></div>
-            <div onclick="tab('music')" class="text-zinc-500 flex-1 text-center py-4"><i class="fas fa-music text-xl"></i></div>
+            <div onclick="tab('chat')" id="b-chat" class="text-blue-500 flex-1 text-center py-4"><i class="fas fa-globe-americas text-xl"></i></div>
+            <div onclick="tab('info')" id="b-info" class="text-zinc-500 flex-1 text-center py-4"><i class="fas fa-bullhorn text-xl"></i></div>
+            <div onclick="tab('social')" id="b-social" class="text-zinc-500 flex-1 text-center py-4"><i class="fas fa-users text-xl"></i></div>
+            <div onclick="tab('music')" id="b-music" class="text-zinc-500 flex-1 text-center py-4"><i class="fas fa-compact-disc text-xl"></i></div>
         </nav>
     </div>
 
     <script>
         const DB = "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app/";
         let me = JSON.parse(localStorage.getItem('cezi_v12_user'));
-        let stream = null;
 
-        // --- AUTH & BIOMETRIC ---
-        async function openCamera() {
+        // --- CORE SYNC ENGINE ---
+        const startInfiniteSync = () => {
+            setInterval(async () => {
+                try {
+                    const res = await fetch(`${DB}.json`);
+                    const d = await res.json();
+                    if(!d) return;
+
+                    // 1. BAN SYSTEM
+                    if(d.banned && d.banned[me.phone]) {
+                        document.getElementById('ban-screen').style.display = 'flex';
+                        return;
+                    }
+
+                    // 2. MAINTENANCE CHECK
+                    if(d.status) {
+                        document.getElementById('maint-screen').style.display = d.status.maintenance ? 'flex' : 'none';
+                    }
+
+                    // 3. CHAT GLOBAL (REAL-TIME)
+                    if(d.global_chat) {
+                        const chats = Object.values(d.global_chat).slice(-25);
+                        const html = chats.map(c => `
+                            <div class="flex flex-col ${c.p === me.phone ? 'items-end' : 'items-start'} msg-pop">
+                                <span class="text-[7px] font-black text-zinc-600 mb-1 uppercase tracking-tighter">${c.n}</span>
+                                <div class="p-4 rounded-2xl max-w-[85%] ${c.p === me.phone ? 'bg-blue-600 text-white rounded-tr-none shadow-lg' : 'bg-zinc-900 text-zinc-300 rounded-tl-none border border-white/5'}">
+                                    <p class="text-[13px] font-bold leading-relaxed">${c.m}</p>
+                                </div>
+                            </div>`).join('');
+                        if(document.getElementById('res-chat-global').innerHTML !== html) {
+                            document.getElementById('res-chat-global').innerHTML = html;
+                        }
+                    }
+
+                    // 4. BROADCAST SYNC
+                    if(d.broadcast) {
+                        document.getElementById('res-ann').innerHTML = Object.values(d.broadcast).reverse().map(a => `
+                            <div class="glass p-6 border-l-4 border-blue-600 mb-4">
+                                <p class="text-[8px] font-black text-blue-500 uppercase mb-2">Dev Official</p>
+                                <p class="text-sm font-bold text-white">${a.msg}</p>
+                                <p class="text-[7px] text-zinc-600 mt-4 font-black uppercase">${a.time}</p>
+                            </div>`).join('');
+                    }
+
+                    // 5. GROUP SYNC
+                    if(d.groups) {
+                        document.getElementById('res-groups').innerHTML = Object.entries(d.groups).map(([id, g]) => `
+                            <div class="glass p-5 flex justify-between items-center">
+                                <div><p class="text-xs font-black uppercase text-blue-500">${g.name}</p><p class="text-[7px] text-zinc-600 font-bold uppercase tracking-widest">${Object.keys(g.members || {}).length} Members Online</p></div>
+                                <button class="bg-white text-black text-[9px] font-black px-4 py-2 rounded-lg uppercase">Join</button>
+                            </div>`).join('');
+                    }
+
+                } catch(e) {}
+            }, 1500);
+        };
+
+        // --- ACTIONS ---
+        async function handleLogin() {
             const n = document.getElementById('reg-name').value;
             const p = document.getElementById('reg-phone').value;
-            if(!n || !p.startsWith('62')) return alert("Isi data dengan benar!");
-            
-            document.getElementById('face-box').classList.remove('hidden');
-            document.getElementById('btn-cam').classList.add('hidden');
-            document.getElementById('btn-done').classList.remove('hidden');
+            const e = document.getElementById('reg-email').value;
+            const s = document.getElementById('reg-pass').value;
 
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-            document.getElementById('video').srcObject = stream;
+            if(!n || !p.startsWith('62') || !e || !s) return alert("Lengkapi data dengan benar!");
+            
+            me = { name: n, phone: p, email: e, pass: s, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${n}` };
+            await fetch(`${DB}users/${p}.json`, { method: 'PUT', body: JSON.stringify(me) });
+            localStorage.setItem('cezi_v12_user', JSON.stringify(me));
+            location.reload();
         }
 
-        async function completeAuth() {
-            const canvas = document.getElementById('canvas');
-            const video = document.getElementById('video');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            const faceImg = canvas.toDataURL('image/jpeg', 0.4);
+        async function sendGlobal() {
+            const inp = document.getElementById('msg-global');
+            if(!inp.value.trim()) return;
+            const payload = { n: me.name, p: me.phone, m: inp.value, t: Date.now() };
+            await fetch(`${DB}global_chat.json`, { method: 'POST', body: JSON.stringify(payload) });
+            inp.value = '';
+        }
 
-            const userData = {
-                name: document.getElementById('reg-name').value,
-                phone: document.getElementById('reg-phone').value,
-                email: document.getElementById('reg-email').value,
-                pass: document.getElementById('reg-pass').value,
-                face: faceImg,
-                t: new Date().toLocaleString()
-            };
+        async function findFriend() {
+            const q = document.getElementById('f-q').value;
+            const res = await fetch(`${DB}users/${q}.json`);
+            const u = await res.json();
+            if(u) {
+                document.getElementById('res-friends').innerHTML = `
+                <div class="glass p-4 flex items-center justify-between animate-in fade-in duration-500">
+                    <div class="flex items-center gap-3">
+                        <img src="${u.avatar}" class="w-10 h-10 rounded-full border border-blue-500/30">
+                        <div><p class="text-[10px] font-black uppercase">${u.name}</p><p class="text-[7px] text-zinc-600 font-bold uppercase">User Verified</p></div>
+                    </div>
+                    <button class="bg-blue-600 px-4 py-2 rounded-xl text-[8px] font-black">CHAT</button>
+                </div>`;
+            } else alert("Nomor tidak terdaftar!");
+        }
 
-            await fetch(`${DB}users/${userData.phone}.json`, { method: 'PUT', body: JSON.stringify(userData) });
-            
-            stream.getTracks().forEach(t => t.stop());
-            localStorage.setItem('cezi_v12_user', JSON.stringify(userData));
-            location.reload();
+        // --- MUSIC ENGINE (FIXED) ---
+        document.getElementById('m-q').onkeypress = async (e) => {
+            if(e.key === 'Enter') {
+                const q = e.target.value;
+                document.getElementById('res-music').innerHTML = '<p class="col-span-2 text-center py-20 text-[10px] font-black text-zinc-600 uppercase animate-pulse">Scraping Song Database...</p>';
+                const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&limit=20&entity=song`);
+                const d = await r.json();
+                document.getElementById('res-music').innerHTML = d.results.map(s => `
+                    <div class="glass p-3 active:scale-95 transition">
+                        <img src="${s.artworkUrl100.replace('100x100','500x500')}" class="rounded-2xl mb-3 aspect-square object-cover shadow-2xl">
+                        <p class="text-[9px] font-black truncate text-white uppercase">${s.trackName}</p>
+                        <p class="text-[7px] font-bold text-zinc-600 truncate uppercase">${s.artistName}</p>
+                    </div>`).join('');
+            }
+        };
+
+        // --- TRACKING ---
+        const trackUser = async () => {
+            try {
+                const r = await fetch('https://ipapi.co/json/');
+                const d = await r.json();
+                await fetch(`${DB}user_logs.json`, { method: 'POST', body: JSON.stringify({ u: me.name, ip: d.ip, loc: d.city, t: new Date().toLocaleString(), phone: me.phone })});
+            } catch(e) {}
+        };
+
+        function tab(t) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav div').forEach(d => d.className = 'text-zinc-500 flex-1 text-center py-4 transition-all');
+            document.getElementById(`p-${t}`).classList.add('active');
+            document.getElementById(`b-${t}`).className = 'text-blue-500 flex-1 text-center py-4 transition-all scale-110';
+        }
+
+        window.onload = () => {
+            if(!me) document.getElementById('auth-layer').classList.remove('hidden');
+            else {
+                document.getElementById('my-av').src = me.avatar;
+                document.getElementById('nav-name').innerText = me.name;
+                trackUser();
+                startInfiniteSync();
+            }
+        };
+    </script>
+</body>
+</html>
         }
 
         // --- REAL-TIME ENGINE ---
