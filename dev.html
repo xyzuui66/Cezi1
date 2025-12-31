@@ -2,113 +2,113 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CeziDev v12.5 - Titanium Command Center</title>
+    <title>CeziDev v12.7 - Command Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020202; color: #fff; }
-        .glass-card { background: rgba(15, 15, 15, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border-radius: 40px; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-    </style>
+    <style>body { background: #050505; color: #fff; font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="p-6 md:p-12">
-
+<body class="p-8">
     <div class="max-w-7xl mx-auto">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 glass-card p-10">
+        <header class="flex flex-col md:row justify-between items-center mb-10 bg-zinc-900/50 p-10 rounded-[40px] border border-white/5">
             <div>
-                <h1 class="text-3xl font-black italic uppercase tracking-tighter">Cezi<span class="text-blue-500">Dev</span> <span class="text-[10px] bg-blue-600/20 text-blue-500 px-3 py-1 rounded-full ml-2 not-italic tracking-widest">v12.5</span></h1>
-                <p class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em] mt-2">Biometric & Cloud Security Active</p>
+                <h1 class="text-3xl font-black italic uppercase italic">Cezi<span class="text-blue-500">Dev</span></h1>
+                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mt-2">Titanium Control Active</p>
             </div>
             <div class="flex gap-4">
-                <button onclick="toggleSystem('maintenance')" class="bg-zinc-800 hover:bg-red-600/20 hover:text-red-500 transition px-6 py-4 rounded-2xl text-[10px] font-black uppercase border border-white/5">Maintenance Mode</button>
-                <button onclick="clearAllLogs()" class="bg-zinc-800 hover:bg-zinc-700 transition px-6 py-4 rounded-2xl text-[10px] font-black uppercase border border-white/5 text-zinc-400">Clear Logs</button>
+                <button onclick="toggleSystem('maintenance')" class="bg-red-600/10 text-red-500 px-6 py-4 rounded-2xl text-[10px] font-black uppercase border border-red-500/20">Toggle Maintenance</button>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <div class="space-y-8">
-                <div class="glass-card p-8">
-                    <h2 class="text-blue-500 font-black text-xs uppercase mb-6 tracking-widest"><i class="fas fa-satellite-dish mr-2"></i> Push Broadcast</h2>
-                    <textarea id="dev-msg" placeholder="Ketik pesan real-time untuk semua user..." class="w-full bg-black/50 p-6 rounded-3xl border border-white/10 outline-none font-bold text-sm h-32 focus:border-blue-500 transition mb-4"></textarea>
-                    <button onclick="sendDevBroadcast()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-xs shadow-xl shadow-blue-600/20 active:scale-95 transition">Broadcast ke Semua HP</button>
-                </div>
-
-                <div class="glass-card p-8">
-                    <h2 class="text-zinc-500 font-black text-xs uppercase mb-6 tracking-widest">Live Activity Hits</h2>
-                    <div id="log-res" class="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar">
-                        <p class="text-[10px] font-bold text-zinc-700 animate-pulse uppercase">Mencari koneksi user...</p>
-                    </div>
-                </div>
+            <div class="bg-zinc-900/30 p-8 rounded-[40px] border border-white/5">
+                <h2 class="text-xs font-black uppercase text-blue-500 mb-6 tracking-widest">Global Broadcast</h2>
+                <textarea id="b-msg" class="w-full bg-black border border-white/10 p-5 rounded-3xl outline-none font-bold text-xs h-32 mb-4" placeholder="Pesan satu arah ke semua user..."></textarea>
+                <button onclick="sendB()" class="w-full bg-blue-600 py-4 rounded-2xl font-black uppercase text-[10px]">Send Real-time</button>
             </div>
 
-            <div class="lg:col-span-2 glass-card p-10">
-                <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-xs font-black uppercase text-zinc-400 tracking-widest">Global User Database (Biometric)</h2>
-                    <span id="user-count" class="text-[10px] font-black text-blue-500 bg-blue-500/10 px-4 py-1 rounded-full">0 USERS</span>
-                </div>
-
-                <div id="user-monitoring-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[800px] overflow-y-auto pr-2 no-scrollbar">
+            <div class="lg:col-span-2 bg-zinc-900/30 p-8 rounded-[40px] border border-white/5">
+                <h2 class="text-xs font-black uppercase text-zinc-500 mb-6 tracking-widest">Live User Database</h2>
+                <div id="user-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2">
                     </div>
             </div>
 
+            <div class="lg:col-span-3 bg-zinc-900/30 p-8 rounded-[40px] border border-white/5 mt-4">
+                <h2 class="text-xs font-black uppercase text-zinc-600 mb-6 tracking-widest">Real-time Traffic Logs</h2>
+                <div id="log-grid" class="grid grid-cols-2 md:grid-cols-5 gap-4"></div>
+            </div>
         </div>
     </div>
 
     <script>
         const API = "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app/";
 
-        // 1. BROADCAST ENGINE
-        async function sendDevBroadcast() {
-            const m = document.getElementById('dev-msg').value;
-            if(!m) return alert("Pesan tidak boleh kosong!");
-            await fetch(`${API}broadcast.json`, { 
-                method: 'POST', 
-                body: JSON.stringify({ msg: m, time: new Date().toLocaleTimeString() })
-            });
-            document.getElementById('dev-msg').value = '';
-            alert("Broadcast Berhasil Dikirim!");
-        }
-
-        // 2. BAN SYSTEM (REAL-TIME)
-        async function banUser(phone, name) {
-            if(confirm(`Ban permanen ${name} (${phone})? Akses HP akan langsung terputus.`)) {
-                await fetch(`${API}banned/${phone}.json`, { method: 'PUT', body: JSON.stringify(true) });
-                alert(`${name} telah diblokir!`);
-                syncDev();
-            }
-        }
-
-        async function unbanUser(phone) {
-            await fetch(`${API}banned/${phone}.json`, { method: 'DELETE' });
-            alert("Akses dipulihkan.");
-            syncDev();
-        }
-
-        // 3. SYSTEM CONTROL
         async function toggleSystem(key) {
-            const current = await fetch(`${API}status/${key}.json`).then(r => r.json());
-            await fetch(`${API}status/${key}.json`, { method: 'PUT', body: JSON.stringify(!current) });
-            alert(`Sistem ${key} diubah ke: ${!current}`);
+            const cur = await fetch(`${API}status/${key}.json`).then(r => r.json());
+            await fetch(`${API}status/${key}.json`, { method: 'PUT', body: JSON.stringify(!cur) });
+            alert("Maintenance Mode: " + (!cur));
         }
 
-        async function clearAllLogs() {
-            if(confirm("Hapus semua log trafik?")) {
-                await fetch(`${API}user_logs.json`, { method: 'DELETE' });
-                syncDev();
+        async function sendB() {
+            const m = document.getElementById('b-msg').value;
+            if(!m) return;
+            await fetch(`${API}broadcast.json`, { method: 'POST', body: JSON.stringify({ msg: m, time: new Date().toLocaleTimeString() }) });
+            document.getElementById('b-msg').value = '';
+            alert("Broadcast Sent!");
+        }
+
+        async function ban(p) {
+            if(confirm("Ban user ini?")) {
+                await fetch(`${API}banned/${p}.json`, { method: 'PUT', body: JSON.stringify(true) });
+                sync();
             }
         }
 
-        // 4. CORE SYNC ENGINE (WEB DEV CENTER)
-        const syncDev = async () => {
-            try {
-                const res = await fetch(`${API}.json`);
-                const data = await res.json();
-                if(!data) return;
+        async function unban(p) {
+            await fetch(`${API}banned/${p}.json`, { method: 'DELETE' });
+            sync();
+        }
 
+        const sync = async () => {
+            const r = await fetch(`${API}.json`);
+            const d = await r.json();
+            if(!d) return;
+
+            // Sync User Grid
+            if(d.users) {
+                document.getElementById('user-grid').innerHTML = Object.values(d.users).map(u => {
+                    const isBanned = d.banned && d.banned[u.phone];
+                    return `
+                    <div class="bg-black/60 p-6 rounded-3xl border ${isBanned ? 'border-red-600/30' : 'border-white/5'}">
+                        <div class="flex items-center gap-4 mb-4">
+                            <img src="${u.avatar}" class="w-10 h-10 rounded-full border border-white/10">
+                            <div><p class="text-[10px] font-black uppercase">${u.name}</p><p class="text-[8px] text-zinc-600 font-bold">${u.email}</p></div>
+                        </div>
+                        <p class="text-[10px] text-blue-500 font-black mb-4">${u.phone}</p>
+                        <div class="flex gap-2">
+                            ${isBanned ? `<button onclick="unban('${u.phone}')" class="flex-1 bg-white text-black py-2 rounded-xl text-[8px] font-black uppercase">Unban</button>` :
+                            `<button onclick="ban('${u.phone}')" class="flex-1 bg-red-600/10 text-red-500 py-2 rounded-xl text-[8px] font-black uppercase">Ban User</button>`}
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+
+            // Sync Logs
+            if(d.user_logs) {
+                const logs = Object.values(d.user_logs).reverse().slice(0, 10);
+                document.getElementById('log-grid').innerHTML = logs.map(l => `
+                    <div class="bg-black p-4 rounded-2xl border border-white/5 text-center">
+                        <p class="text-[9px] font-black text-blue-500 uppercase">${l.u}</p>
+                        <p class="text-[8px] text-zinc-600 mt-1 font-bold">${l.ip}</p>
+                        <p class="text-[7px] text-zinc-700 mt-1">${l.loc}</p>
+                    </div>`).join('');
+            }
+        };
+
+        setInterval(sync, 4000);
+        sync();
+    </script>
+</body>
+</html>
                 // Sync Registered Users with Face Data
                 if(data.users) {
                     const userList = Object.values(data.users);
