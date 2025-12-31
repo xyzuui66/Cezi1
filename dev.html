@@ -2,39 +2,43 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Cezi Dev - Titanium Controller</title>
+    <title>CeziDev - Titanium Command Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-[#050505] text-white p-6 font-sans">
+<body class="bg-[#050505] text-white p-8 font-sans">
     <div class="max-w-7xl mx-auto">
-        <header class="flex justify-between items-center mb-10 bg-zinc-900/50 p-8 rounded-[40px] border border-white/5">
+        <header class="flex justify-between items-center mb-12 bg-zinc-900/40 p-10 rounded-[48px] border border-white/5 shadow-2xl">
             <div>
-                <h1 class="text-2xl font-black italic uppercase">Cezi<span class="text-blue-500">Monitor</span></h1>
-                <p class="text-[9px] font-black text-green-500 uppercase tracking-widest mt-1">Live Tracking Active</p>
+                <h1 class="text-3xl font-black italic uppercase tracking-tighter">Cezi<span class="text-blue-500">Dev</span></h1>
+                <p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] mt-2">Titanium Cloud Monitor Active</p>
             </div>
             <div class="flex gap-4">
-                <button onclick="setStatus('maintenance', true)" class="bg-red-600 px-6 py-3 rounded-2xl text-[10px] font-black uppercase">Lock App</button>
-                <button onclick="setStatus('maintenance', false)" class="bg-blue-600 px-6 py-3 rounded-2xl text-[10px] font-black uppercase">Unlock</button>
+                <button onclick="setStatus('maintenance', true)" class="bg-red-600/10 text-red-500 border border-red-500/20 px-8 py-4 rounded-3xl text-[10px] font-black uppercase hover:bg-red-600 hover:text-white transition shadow-xl">Lock Server</button>
+                <button onclick="setStatus('maintenance', false)" class="bg-blue-600 px-8 py-4 rounded-3xl text-[10px] font-black uppercase shadow-xl shadow-blue-600/20 active:scale-95 transition">Unlock Server</button>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2 bg-zinc-900/30 p-8 rounded-[40px] border border-white/5">
-                <h2 class="text-blue-500 font-black text-xs uppercase mb-6 tracking-widest">User Access Logs (IP Tracking)</h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="text-[8px] text-zinc-600 uppercase border-b border-white/5">
-                            <tr><th class="pb-4">User</th><th class="pb-4">IP Address</th><th class="pb-4">Location</th><th class="pb-4">Time</th></tr>
-                        </thead>
-                        <tbody id="log-res" class="text-[10px] font-bold"></tbody>
-                    </table>
+            <div class="lg:col-span-2 bg-zinc-900/20 p-10 rounded-[48px] border border-white/5">
+                <h2 class="text-blue-500 font-black text-xs uppercase mb-8 tracking-widest"><i class="fas fa-satellite-dish mr-2"></i> Push Real-time Broadcast</h2>
+                <textarea id="dev-msg" placeholder="Ketik pesan broadcast satu arah untuk 1000+ user..." class="w-full bg-black/50 p-8 rounded-[32px] border border-white/10 outline-none font-bold text-sm h-48 focus:border-blue-500 transition shadow-inner"></textarea>
+                <div class="flex gap-4 mt-8">
+                    <button onclick="sendDevBroadcast()" class="flex-1 bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-xl active:scale-95 transition">Kirim ke Semua User Sekarang</button>
+                    <button onclick="clearBroadcast()" class="bg-zinc-800 px-8 py-6 rounded-3xl font-black uppercase text-[10px] text-zinc-500">Clear</button>
                 </div>
             </div>
 
-            <div class="bg-zinc-900/30 p-8 rounded-[40px] border border-red-500/10">
-                <h2 class="text-red-500 font-black text-xs uppercase mb-6 tracking-widest">Bug Reports</h2>
-                <div id="bug-res" class="space-y-4"></div>
+            <div class="bg-zinc-900/20 p-10 rounded-[48px] border border-white/5">
+                <h2 class="text-zinc-500 font-black text-xs uppercase mb-8 tracking-widest">Active Hits Log</h2>
+                <div id="log-res" class="space-y-4 max-h-[400px] overflow-y-auto no-scrollbar">
+                    <p class="text-[10px] font-black text-zinc-700 animate-pulse uppercase">Menunggu trafik...</p>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3 bg-zinc-900/20 p-10 rounded-[48px] border border-blue-500/10 mt-4">
+                <h2 class="text-blue-500 font-black text-xs uppercase mb-8 tracking-widest">Registered Global Users</h2>
+                <div id="user-db-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4"></div>
             </div>
         </div>
     </div>
@@ -44,66 +48,56 @@
 
         async function setStatus(k, v) {
             await fetch(`${API}status/${k}.json`, { method: 'PUT', body: JSON.stringify(v) });
-            alert("Updated!");
+            alert("System Status Updated!");
+        }
+
+        async function sendDevBroadcast() {
+            const m = document.getElementById('dev-msg').value;
+            if(!m) return alert("Pesan kosong!");
+            await fetch(`${API}broadcast.json`, { 
+                method: 'POST', 
+                body: JSON.stringify({ msg: m, time: new Date().toLocaleTimeString() })
+            });
+            document.getElementById('dev-msg').value = '';
+            alert("Broadcast Terkirim Real-time!");
+        }
+
+        async function clearBroadcast() {
+            await fetch(`${API}broadcast.json`, { method: 'DELETE' });
+            alert("Broadcast dihapus!");
         }
 
         const syncDev = async () => {
-            const r = await fetch(`${API}.json`);
-            const d = await r.json();
-            if(!d) return;
+            try {
+                const r = await fetch(`${API}.json`);
+                const d = await r.json();
+                if(!d) return;
 
-            // Render IP Logs
-            if(d.user_logs) {
-                const logs = Object.values(d.user_logs).reverse().slice(0, 15);
-                document.getElementById('log-res').innerHTML = logs.map(l => `
-                    <tr class="border-b border-white/5">
-                        <td class="py-4 text-white">${l.u}<br><span class="text-[7px] text-zinc-600">${l.p}</span></td>
-                        <td class="py-4 font-mono text-blue-500">${l.ip}</td>
-                        <td class="py-4 text-zinc-400">${l.loc}</td>
-                        <td class="py-4 text-zinc-600 text-[8px]">${l.t}</td>
-                    </tr>`).join('');
-            }
+                // Sync IP Logs
+                if(d.user_logs) {
+                    const logs = Object.values(d.user_logs).reverse().slice(0, 10);
+                    document.getElementById('log-res').innerHTML = logs.map(l => `
+                        <div class="bg-black/40 p-4 rounded-2xl border border-white/5">
+                            <p class="text-[9px] font-black text-blue-500 uppercase">${l.u}</p>
+                            <p class="text-[10px] font-mono text-zinc-400 mt-1">${l.ip}</p>
+                            <p class="text-[7px] text-zinc-600 mt-2 font-bold">${l.loc} • ${l.t}</p>
+                        </div>`).join('');
+                }
 
-            // Render Bugs
-            if(d.reports) {
-                document.getElementById('bug-res').innerHTML = Object.values(d.reports).reverse().map(b => `
-                    <div class="bg-black/50 p-4 rounded-2xl border border-white/5">
-                        <p class="text-[8px] font-black text-red-500 mb-1 uppercase">${b.u}</p>
-                        <p class="text-[10px] font-bold text-zinc-300">${b.r}</p>
-                    </div>`).join('');
-            }
+                // Sync Registered Users
+                if(d.users) {
+                    document.getElementById('user-db-list').innerHTML = Object.values(d.users).map(u => `
+                        <div class="bg-black/60 p-4 rounded-3xl text-center border border-white/5">
+                            <img src="${u.avatar}" class="w-12 h-12 rounded-full mx-auto mb-3 border border-white/10">
+                            <p class="text-[9px] font-black uppercase text-white truncate">${u.name}</p>
+                            <p class="text-[7px] text-zinc-600 font-bold">${u.phone}</p>
+                        </div>`).join('');
+                }
+            } catch(e) {}
         };
 
         setInterval(syncDev, 5000);
         syncDev();
-    </script>
-</body>
-</html>
-            } catch(e) { console.error("Monitor Error"); }
-        }
-
-        async function clearAllChats() {
-            if(confirm("PERINGATAN: Semua riwayat chat di database akan dihapus permanen!")) {
-                await fetch(BASE_DB + "chats.json", { method: 'DELETE' });
-                fetchChats();
-            }
-        }
-
-        // Jalankan sinkronisasi otomatis
-        setInterval(() => {
-            fetchChats();
-            loadAnnounceList();
-        }, 5000); // Update setiap 5 detik
-
-        // Load pertama kali
-        window.onload = () => {
-            loadAnnounceList();
-            fetchChats();
-        };
-    </script>
-</body>
-</html>
-        fetchChats();
     </script>
 </body>
 </html>
