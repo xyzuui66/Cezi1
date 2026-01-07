@@ -2,62 +2,78 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>VNIO Bot-Tester - Telegram Engine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vnio Bot-Labs: Random Identity</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: #0e1621; color: #50a7ea; font-family: 'Courier New', monospace; }
-        .tg-panel { background: #17212b; border: 1px solid #242f3d; border-radius: 20px; }
-        .btn-tg { background: #2b5278; transition: 0.2s; }
-        .btn-tg:hover { background: #33618d; transform: translateY(-2px); }
-        .log-box { background: #000; border-radius: 12px; height: 300px; overflow-y: auto; padding: 15px; font-size: 11px; color: #81b3d2; }
+        body { background: #050505; color: #3b82f6; font-family: 'monospace'; }
+        .glass { background: rgba(15, 15, 15, 0.8); border: 1px solid #1e293b; border-radius: 20px; }
+        .log-screen { background: #000; border: 1px solid #0f172a; height: 180px; overflow-y: auto; font-size: 10px; padding: 10px; color: #64748b; }
+        input { background: #0f172a !important; border: 1px solid #1e293b !important; color: #fff !important; }
+        .btn-cmd { background: #1e293b; color: #fff; transition: 0.2s; font-size: 10px; font-weight: bold; }
+        .btn-cmd:hover { background: #3b82f6; color: #000; }
     </style>
 </head>
-<body class="p-6 md:p-12">
-    <div class="max-w-3xl mx-auto">
-        <div class="flex items-center justify-between mb-8">
+<body class="p-6">
+
+    <div class="max-w-4xl mx-auto">
+        <div class="flex items-center justify-between mb-6">
             <div>
-                <h1 class="text-2xl font-black text-white italic">TG-BOT <span class="text-blue-400">TESTER</span></h1>
-                <p class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Injected for Vnioapp Uji Coba</p>
-            </div>
-            <div class="text-right">
-                <span id="status-chip" class="bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-[10px] font-bold uppercase">System Active</span>
+                <h1 class="text-2xl font-black italic text-white">BOT-LABS <span class="text-blue-500">RANDOM</span></h1>
+                <p class="text-[9px] uppercase font-bold text-zinc-500">Identity Mode: Monzy, Cezi, Gyruu, Rynxtr, Wisz</p>
             </div>
         </div>
 
-        <div class="tg-panel p-6 shadow-2xl">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="glass p-5 space-y-4">
+                <h2 class="text-xs font-black uppercase mb-4 border-b border-blue-900 pb-2 text-white">Execution Control</h2>
                 <div>
-                    <label class="text-[10px] font-black text-zinc-500 mb-2 block uppercase">Target Room / Channel ID</label>
-                    <input id="target-id" type="text" value="global" placeholder="e.g. global atau saved_ID-123" class="w-full bg-[#0e1621] border border-[#242f3d] p-3 rounded-xl text-sm text-white outline-none focus:border-blue-500">
+                    <label class="text-[9px] font-bold text-zinc-500 italic">TARGET ROOM ID</label>
+                    <input id="target-id" type="text" value="global" class="w-full p-3 rounded-xl mt-1 outline-none text-xs">
                 </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="blast('morning')" class="btn-cmd py-4 rounded-xl">🌅 Pagi</button>
+                    <button onclick="blast('night')" class="btn-cmd py-4 rounded-xl">🌙 Malam</button>
+                </div>
+
                 <div>
-                    <label class="text-[10px] font-black text-zinc-500 mb-2 block uppercase">Bot Identity</label>
-                    <select id="bot-identity" class="w-full bg-[#0e1621] border border-[#242f3d] p-3 rounded-xl text-sm text-white outline-none">
-                        <option value="VNIO-SYSTEM">Vnio System (@vniosystem)</option>
-                        <option value="TG-NOTIFIER">TG Notifier (@tgnotify)</option>
-                        <option value="SECURITY-BOT">Security Lab (@vnioshield)</option>
-                    </select>
+                    <label class="text-[9px] font-bold text-zinc-500 italic">MANUAL INJECT</label>
+                    <div class="flex gap-2 mt-1">
+                        <input id="manual-msg" type="text" placeholder="Pesan manual..." class="flex-1 p-3 rounded-lg text-xs">
+                        <button onclick="blast('manual')" class="bg-blue-600 text-black px-4 rounded-lg font-bold text-[10px]">SEND</button>
+                    </div>
                 </div>
+
+                <button onclick="blast('alert')" class="w-full bg-red-950/20 border border-red-500/30 text-red-500 py-3 rounded-xl text-[10px] font-black uppercase hover:bg-red-600 hover:text-white transition">
+                    🚨 EMERGENCY BROADCAST
+                </button>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-                <button onclick="sendTG('morning')" class="btn-tg p-4 rounded-xl text-[10px] font-bold text-white uppercase">🌅 Pagi</button>
-                <button onclick="sendTG('noon')" class="btn-tg p-4 rounded-xl text-[10px] font-bold text-white uppercase">☀️ Siang</button>
-                <button onclick="sendTG('night')" class="btn-tg p-4 rounded-xl text-[10px] font-bold text-white uppercase">🌙 Malam</button>
-                <button onclick="sendTG('urgent')" class="bg-red-600/20 text-red-500 border border-red-500/30 p-4 rounded-xl text-[10px] font-bold uppercase">🚨 Urgent</button>
-            </div>
-
-            <div class="mt-4">
-                <p class="text-[10px] font-black text-zinc-600 mb-2 uppercase tracking-widest">Bot Execution Log</p>
-                <div id="logs" class="log-box border border-white/5">
-                    <div class="opacity-40 italic">-- Initializing Telegram Injector... --</div>
+            <div class="glass p-5 space-y-4">
+                <h2 class="text-xs font-black uppercase mb-4 border-b border-blue-900 pb-2 text-white">Media Injector</h2>
+                <div>
+                    <label class="text-[9px] font-bold text-zinc-500">STORY URL (IMG)</label>
+                    <div class="flex gap-2 mt-1">
+                        <input id="story-url" type="text" placeholder="https://..." class="flex-1 p-3 rounded-lg text-xs">
+                        <button onclick="injectStory()" class="bg-white text-black px-4 rounded-lg font-bold text-[10px]">PUSH</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[9px] font-bold text-zinc-500">VIDEO URL (MP4)</label>
+                    <div class="flex gap-2 mt-1">
+                        <input id="video-url" type="text" placeholder="https://..." class="flex-1 p-3 rounded-lg text-xs">
+                        <button onclick="injectVideo()" class="bg-blue-500 text-black px-4 rounded-lg font-bold text-[10px]">PUSH</button>
+                    </div>
+                </div>
+                <div id="logs" class="log-screen rounded-xl mt-4">
+                    <div class="opacity-30 italic">>> System standby. Identity pool loaded.</div>
                 </div>
             </div>
         </div>
-        
-        <p class="text-center mt-6 text-[10px] text-zinc-600">Bot-Tester v3.9 | Khusus Mode Uji Coba</p>
     </div>
 
     <script>
@@ -65,32 +81,60 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        async function sendTG(type) {
+        // POOL NAMA SESUAI KEINGINANMU
+        const names = ["Monzy", "Cezi", "Gyruu", "Rynxtr", "Wisz"];
+
+        function addLog(m, color="text-blue-400") {
+            const l = document.getElementById('logs');
+            l.innerHTML += `<div class="${color} mb-1">[${new Date().toLocaleTimeString()}] ${m}</div>`;
+            l.scrollTop = l.scrollHeight;
+        }
+
+        async function blast(type) {
             const room = document.getElementById('target-id').value;
-            const botName = document.getElementById('bot-identity').value;
+            // AMBIL NAMA ACAK
+            const randomName = names[Math.floor(Math.random() * names.length)];
             let message = "";
 
-            // LOGIC PESAN PENTING (Bukan Spam)
-            switch(type) {
-                case 'morning': message = "<b>[Channel Info]</b> Selamat pagi. Server v14.0 (TG-Inject) terpantau stabil dengan latensi rendah."; break;
-                case 'noon': message = "<b>[Status Report]</b> Laporan Siang: Sesi user aktif mencapai puncak harian. Database sinkron."; break;
-                case 'night': message = "<b>[Maintenance]</b> Laporan Malam: Memulai enkripsi rutin. Sistem tetap online."; break;
-                case 'urgent': message = "⚠️ <b>[SECURITY ALERT]</b> Terdeteksi aktivitas pengujian baru di Lab. Mohon pantau konsol."; break;
-            }
+            if(type === 'manual') message = document.getElementById('manual-msg').value;
+            else if(type === 'morning') message = "<b>[System]</b> Sesi pagi aktif. Selamat beraktivitas.";
+            else if(type === 'night') message = "<b>[System]</b> Sesi malam dimulai. Keamanan server ditingkatkan.";
+            else if(type === 'alert') message = "⚠️ <b>SECURITY:</b> Deteksi aktivitas uji coba!";
 
-            addLog(`Mencoba akses ke jalur: ${room}...`);
+            if(!message) return;
 
-            // CEK METADATA (Jika Target adalah Grup yang Dikunci)
-            const metaSnap = await db.ref('groups/metadata/' + room).get();
-            const meta = metaSnap.val();
-
-            if(room !== 'global' && meta && meta.perms.send === 'admin') {
-                addLog(`DITOLAK: Ruangan ${room} hanya untuk Admin.`, "text-red-400");
-                return;
-            }
-
-            // KIRIM PESAN KE FIREBASE
             db.ref('chats/' + room).push({
+                user: randomName, // Nama bot sekarang acak
+                phone: "BOT_SYS_" + randomName.toUpperCase(),
+                msg: message,
+                role: 'bot',
+                time: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                addLog(`Bot <b>${randomName}</b> berhasil mengirim pesan ke ${room}.`);
+                if(type === 'manual') document.getElementById('manual-msg').value = "";
+            });
+        }
+
+        function injectStory() {
+            const url = document.getElementById('story-url').value;
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            if(!url) return;
+            db.ref('stories').push({ user: randomName, img: url, time: firebase.database.ServerValue.TIMESTAMP });
+            addLog(`Story disuntik oleh <b>${randomName}</b>.`);
+            document.getElementById('story-url').value = "";
+        }
+
+        function injectVideo() {
+            const url = document.getElementById('video-url').value;
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            if(!url) return;
+            db.ref('global_videos').push({ user: randomName, video: url, likes: Math.floor(Math.random()*100) });
+            addLog(`Video dipromosikan oleh <b>${randomName}</b>.`);
+            document.getElementById('video-url').value = "";
+        }
+    </script>
+</body>
+</html>
                 user: botName,
                 uid: "BOT-" + type.toUpperCase(),
                 msg: message,
