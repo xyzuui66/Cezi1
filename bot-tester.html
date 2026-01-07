@@ -2,113 +2,117 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Vnio-Bot Tester Pro</title>
+    <title>VNIO Bot-Tester - Telegram Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #050505; color: #00ff00; font-family: monospace; }
-        .panel { border: 1px solid #004400; padding: 20px; border-radius: 10px; background: rgba(0,255,0,0.02); }
-        .input-bot { background: #000; border: 1px solid #004400; color: #00ff00; padding: 5px 10px; width: 100%; outline: none; margin-bottom: 10px; }
+        body { background: #0e1621; color: #50a7ea; font-family: 'Courier New', monospace; }
+        .tg-panel { background: #17212b; border: 1px solid #242f3d; border-radius: 20px; }
+        .btn-tg { background: #2b5278; transition: 0.2s; }
+        .btn-tg:hover { background: #33618d; transform: translateY(-2px); }
+        .log-box { background: #000; border-radius: 12px; height: 300px; overflow-y: auto; padding: 15px; font-size: 11px; color: #81b3d2; }
     </style>
 </head>
-<body class="p-10">
-    <h1 class="text-xl font-bold mb-8">VNIO-BOT <span class="bg-green-900 text-black px-2">PRO TESTER</span></h1>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-        <div class="panel">
-            <h2 class="text-xs mb-4 text-green-700 uppercase font-bold">Bot Control Center</h2>
-            
-            <label class="text-[10px]">Target Room ID (Global atau Group ID):</label>
-            <input id="target-id" type="text" value="global" class="input-bot" placeholder="Contoh: grp_abc123">
-            
-            <label class="text-[10px]">Bot Role:</label>
-            <select id="bot-role" class="input-bot">
-                <option value="bot">Normal Bot</option>
-                <option value="user">Simulated User (Bukan Bot)</option>
-            </select>
-
-            <button onclick="startTest()" id="btn-run" class="w-full bg-green-600 text-black font-bold py-3 mt-4">RUN AUTOMATION</button>
-            <button onclick="stopTest()" id="btn-stop" class="w-full bg-red-900 text-white font-bold py-3 mt-2 hidden">TERMINATE</button>
+<body class="p-6 md:p-12">
+    <div class="max-w-3xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-2xl font-black text-white italic">TG-BOT <span class="text-blue-400">TESTER</span></h1>
+                <p class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Injected for Vnioapp Uji Coba</p>
+            </div>
+            <div class="text-right">
+                <span id="status-chip" class="bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-[10px] font-bold uppercase">System Active</span>
+            </div>
         </div>
 
-        <div class="panel flex flex-col h-[400px]">
-            <h2 class="text-xs mb-4 text-green-700 uppercase font-bold">Live Traffic Monitor</h2>
-            <div id="logs" class="text-[10px] overflow-y-auto flex-1"></div>
+        <div class="tg-panel p-6 shadow-2xl">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="text-[10px] font-black text-zinc-500 mb-2 block uppercase">Target Room / Channel ID</label>
+                    <input id="target-id" type="text" value="global" placeholder="e.g. global atau saved_ID-123" class="w-full bg-[#0e1621] border border-[#242f3d] p-3 rounded-xl text-sm text-white outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-zinc-500 mb-2 block uppercase">Bot Identity</label>
+                    <select id="bot-identity" class="w-full bg-[#0e1621] border border-[#242f3d] p-3 rounded-xl text-sm text-white outline-none">
+                        <option value="VNIO-SYSTEM">Vnio System (@vniosystem)</option>
+                        <option value="TG-NOTIFIER">TG Notifier (@tgnotify)</option>
+                        <option value="SECURITY-BOT">Security Lab (@vnioshield)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+                <button onclick="sendTG('morning')" class="btn-tg p-4 rounded-xl text-[10px] font-bold text-white uppercase">🌅 Pagi</button>
+                <button onclick="sendTG('noon')" class="btn-tg p-4 rounded-xl text-[10px] font-bold text-white uppercase">☀️ Siang</button>
+                <button onclick="sendTG('night')" class="btn-tg p-4 rounded-xl text-[10px] font-bold text-white uppercase">🌙 Malam</button>
+                <button onclick="sendTG('urgent')" class="bg-red-600/20 text-red-500 border border-red-500/30 p-4 rounded-xl text-[10px] font-bold uppercase">🚨 Urgent</button>
+            </div>
+
+            <div class="mt-4">
+                <p class="text-[10px] font-black text-zinc-600 mb-2 uppercase tracking-widest">Bot Execution Log</p>
+                <div id="logs" class="log-box border border-white/5">
+                    <div class="opacity-40 italic">-- Initializing Telegram Injector... --</div>
+                </div>
+            </div>
         </div>
+        
+        <p class="text-center mt-6 text-[10px] text-zinc-600">Bot-Tester v3.9 | Khusus Mode Uji Coba</p>
     </div>
 
     <script>
-        // Konfigurasi SAMA agar terhubung ke Vnioapp Pro
-        const firebaseConfig = {
-            apiKey: "AIzaSyBeGnAjNVmoB-uYGWadpFkEyxlPpuTmz2o",
-            authDomain: "ceziroom.firebaseapp.com",
-            databaseURL: "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "ceziroom",
-            storageBucket: "ceziroom.firebasestorage.app",
-            messagingSenderId: "771662623358",
-            appId: "1:771662623358:web:de5b7635f3ff27f19fde2f"
-        };
+        const firebaseConfig = { databaseURL: "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let running = false;
-        let job;
+        async function sendTG(type) {
+            const room = document.getElementById('target-id').value;
+            const botName = document.getElementById('bot-identity').value;
+            let message = "";
 
-        function startTest() {
-            running = true;
-            const target = document.getElementById('target-id').value;
-            const role = document.getElementById('bot-role').value;
-            
-            document.getElementById('btn-run').classList.add('hidden');
-            document.getElementById('btn-stop').classList.remove('hidden');
-            addLog(`Sistem Terhubung ke: ${target}`, "text-blue-400");
+            // LOGIC PESAN PENTING (Bukan Spam)
+            switch(type) {
+                case 'morning': message = "<b>[Channel Info]</b> Selamat pagi. Server v14.0 (TG-Inject) terpantau stabil dengan latensi rendah."; break;
+                case 'noon': message = "<b>[Status Report]</b> Laporan Siang: Sesi user aktif mencapai puncak harian. Database sinkron."; break;
+                case 'night': message = "<b>[Maintenance]</b> Laporan Malam: Memulai enkripsi rutin. Sistem tetap online."; break;
+                case 'urgent': message = "⚠️ <b>[SECURITY ALERT]</b> Terdeteksi aktivitas pengujian baru di Lab. Mohon pantau konsol."; break;
+            }
 
-            job = setInterval(() => {
-                const day = new Date().getDay(); // 0-6 (Daily Rotation)
-                const botName = `VNIO-BOT-${day+1}`;
-                const msg = "Testing koneksi Lab... status normal.";
+            addLog(`Mencoba akses ke jalur: ${room}...`);
 
-                db.ref('chats/' + target).push({
-                    user: botName,
-                    msg: msg,
-                    role: role,
-                    time: firebase.database.ServerValue.TIMESTAMP
-                }).then(() => addLog(`Pesan terkirim dari ${botName} ke ${target}`));
-            }, 5000); // 5 detik sekali agar tidak memberatkan
+            // CEK METADATA (Jika Target adalah Grup yang Dikunci)
+            const metaSnap = await db.ref('groups/metadata/' + room).get();
+            const meta = metaSnap.val();
+
+            if(room !== 'global' && meta && meta.perms.send === 'admin') {
+                addLog(`DITOLAK: Ruangan ${room} hanya untuk Admin.`, "text-red-400");
+                return;
+            }
+
+            // KIRIM PESAN KE FIREBASE
+            db.ref('chats/' + room).push({
+                user: botName,
+                uid: "BOT-" + type.toUpperCase(),
+                msg: message,
+                role: 'bot',
+                important: true,
+                time: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                addLog(`SUKSES: Bot ${botName} berhasil mengirim ke ${room}`, "text-green-400");
+            }).catch(e => {
+                addLog(`ERROR: ${e.message}`, "text-red-500");
+            });
         }
 
-        function stopTest() {
-            running = false;
-            clearInterval(job);
-            document.getElementById('btn-run').classList.remove('hidden');
-            document.getElementById('btn-stop').classList.add('hidden');
-            addLog("Automation Stopped.", "text-red-500");
-        }
-
-        function addLog(m, c="text-green-500") {
+        function addLog(msg, color = "text-blue-200/60") {
             const l = document.getElementById('logs');
-            l.innerHTML += `<div class="${c}">[${new Date().toLocaleTimeString()}] ${m}</div>`;
+            const time = new Date().toLocaleTimeString();
+            l.innerHTML += `<div class="mb-1 ${color}">[${time}] ${msg}</div>`;
             l.scrollTop = l.scrollHeight;
         }
     </script>
 </body>
 </html>
-                    
-                    const interval = setInterval(() => {
-                        const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-                        
-                        db.ref('chats/' + room).push({
-                            user: botName,
-                            msg: randomMsg,
-                            role: 'bot',
-                            time: firebase.database.ServerValue.TIMESTAMP
-                        }).then(() => {
-                            addLog(`${botName}: ${randomMsg}`);
-                        });
-                    }, speed);
-                    
-                    botIntervals.push(interval);
                 }, i * 1000); // Tiap bot masuk selisih 1 detik
             }
         }
