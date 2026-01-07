@@ -3,90 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Vnioapp Uji Coba - Fix Edition</title>
+    <title>Vnioapp - TikTok Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background: #0e1621; color: #fff; height: 100dvh; overflow: hidden; margin: 0; }
-        .ios-blur { background: rgba(23, 33, 43, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
-        .page { display: none; height: 100%; overflow-y: auto; padding-bottom: 90px; }
-        .page.active { display: flex; flex-direction: column; }
-        .tg-bubble { background: #182533; border-radius: 12px; padding: 8px 12px; max-width: 85%; align-self: flex-start; }
-        .tg-bubble-me { background: #2b5278; align-self: flex-end; }
+        body { font-family: 'Inter', sans-serif; background: #000; color: #fff; height: 100dvh; overflow: hidden; margin: 0; }
+        .page { display: none; height: 100%; }
+        .page.active { display: block; }
         
-        /* TikTok Style Video */
-        .tt-container { scroll-snap-type: y mandatory; overflow-y: scroll; height: calc(100vh - 160px); }
-        .tt-video { scroll-snap-align: start; height: 100%; position: relative; background: #000; display: flex; align-items: center; }
-        .tt-side { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        /* TikTok Video Layout */
+        .tt-container { scroll-snap-type: y mandatory; overflow-y: scroll; height: calc(100vh - 65px); scroll-behavior: smooth; }
+        .tt-video-card { scroll-snap-align: start; height: calc(100vh - 65px); position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+
+        /* TikTok Settings Bottom Sheet */
+        .settings-sheet { transform: translateY(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .settings-sheet.show { transform: translateY(0); }
         
-        input[type="file"] { display: none; }
+        .nav-btn { color: #888; transition: 0.2s; }
+        .nav-btn.active { color: #fff; }
+        .profile-stat { text-align: center; }
+        .profile-stat p:first-child { font-weight: 800; font-size: 18px; }
+        .profile-stat p:last-child { font-size: 11px; color: #888; }
     </style>
 </head>
-<body class="flex flex-col">
+<body>
 
-    <header class="p-4 tg-header flex justify-between items-center ios-blur border-b border-black z-50">
-        <div class="flex items-center gap-3">
-            <div id="back-btn" onclick="switchPage('groups')" class="hidden mr-2"><i class="fas fa-arrow-left"></i></div>
-            <img id="room-pp" class="w-10 h-10 rounded-full hidden object-cover">
-            <div>
-                <h1 id="room-name" class="text-sm font-bold">VNIO LABS</h1>
-                <p id="room-status" class="text-[10px] text-blue-400">online</p>
-            </div>
-        </div>
-        <div class="flex gap-4">
-            <i class="fas fa-search text-zinc-500"></i>
-            <i onclick="openSettings()" id="set-icon" class="fas fa-cog text-zinc-500 hidden cursor-pointer"></i>
-        </div>
-    </header>
-
-    <main class="flex-1 relative overflow-hidden">
-        
-        <section id="page-chat" class="page">
-            <div id="chat-feed" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3"></div>
-            <div id="input-area" class="p-2 bg-[#17212b] flex items-center gap-2">
-                <i class="fas fa-paperclip text-zinc-500 px-2"></i>
-                <input id="chat-input" type="text" placeholder="Pesan" class="flex-1 bg-transparent py-3 outline-none text-sm">
-                <button onclick="sendMsg()" class="bg-[#50a7ea] w-10 h-10 rounded-full flex items-center justify-center">
-                    <i class="fas fa-paper-plane text-white text-xs"></i>
-                </button>
-            </div>
+    <main class="h-full">
+        <section id="page-home" class="page active">
+            <div id="tt-feed" class="tt-container hide-scroll">
+                </div>
         </section>
 
-        <section id="page-groups" class="page active">
-            <div class="p-4 flex gap-4 overflow-x-auto bg-[#17212b]/30 border-b border-black">
-                <label class="flex-shrink-0 flex flex-col items-center gap-1 cursor-pointer">
-                    <input type="file" accept="image/*" onchange="upStory(this)">
-                    <div class="w-14 h-14 rounded-full border-2 border-dashed border-zinc-600 flex items-center justify-center text-zinc-500">
-                        <i class="fas fa-plus"></i>
-                    </div>
-                    <span class="text-[8px] font-bold">Story</span>
-                </label>
-                <div id="story-list" class="flex gap-4"></div>
+        <section id="page-profile" class="page bg-black overflow-y-auto">
+            <div class="p-4 flex justify-between items-center border-b border-white/5">
+                <i class="fas fa-user-plus"></i>
+                <span class="font-bold text-sm" id="user-display">Username</span>
+                <i onclick="toggleSettings()" class="fas fa-bars text-xl cursor-pointer"></i>
             </div>
-            <div id="group-list" class="p-2 space-y-1"></div>
-            <button onclick="createGrp()" class="fixed bottom-24 right-6 w-14 h-14 bg-[#50a7ea] rounded-full shadow-lg flex items-center justify-center text-white">
-                <i class="fas fa-edit"></i>
-            </button>
-        </section>
+            
+            <div class="p-6 flex flex-col items-center">
+                <img id="profile-img" class="w-24 h-24 rounded-full border-2 border-white/10 mb-4 object-cover">
+                <p class="font-bold text-md">@<span id="user-handle">user</span></p>
+                
+                <div class="flex gap-8 my-6">
+                    <div class="profile-stat"><p>0</p><p>Mengikuti</p></div>
+                    <div class="profile-stat"><p>1.2M</p><p>Pengikut</p></div>
+                    <div class="profile-stat"><p>10M</p><p>Suka</p></div>
+                </div>
 
-        <section id="page-video" class="page">
-            <div class="p-4 flex justify-between items-center ios-blur border-b border-black">
-                <span class="font-black italic">GLOBAL FEED</span>
-                <label class="bg-white text-black px-4 py-1 rounded-full text-[10px] font-bold cursor-pointer">
-                    <input type="file" accept="video/*" onchange="upVideo(this)">
-                    UPLOAD
-                </label>
+                <div class="flex gap-2 w-full px-4">
+                    <button class="flex-1 bg-[#252525] py-2 rounded-md font-bold text-sm">Edit profil</button>
+                    <button class="bg-[#252525] px-4 py-2 rounded-md"><i class="fas fa-share"></i></button>
+                </div>
             </div>
-            <div id="tt-feed" class="tt-container"></div>
-        </section>
 
+            <div class="grid grid-cols-3 gap-0.5 border-t border-white/5 mt-4">
+                <div class="aspect-[3/4] bg-zinc-900 flex items-center justify-center"><i class="fas fa-lock text-zinc-700"></i></div>
+                <div class="aspect-[3/4] bg-zinc-900"></div>
+                <div class="aspect-[3/4] bg-zinc-900"></div>
+            </div>
+        </section>
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 h-20 ios-blur border-t border-black flex justify-around items-center">
-        <button onclick="switchPage('groups')" class="flex flex-col items-center text-zinc-500" id="nav-home"><i class="fas fa-comment"></i><span class="text-[8px] mt-1">Chat</span></button>
-        <button onclick="switchPage('video')" class="flex flex-col items-center text-zinc-500" id="nav-vid"><i class="fas fa-play-circle"></i><span class="text-[8px] mt-1">Video</span></button>
+    <div id="settings-overlay" onclick="toggleSettings()" class="fixed inset-0 bg-black/60 z-[100] hidden"></div>
+    <div id="settings-menu" class="fixed bottom-0 left-0 right-0 bg-[#121212] z-[101] rounded-t-2xl p-4 settings-sheet">
+        <div class="w-10 h-1 bg-zinc-700 mx-auto rounded-full mb-6"></div>
+        <h3 class="font-bold text-center mb-6">Pengaturan dan privasi</h3>
+        <div class="space-y-1">
+            <div class="flex items-center gap-4 p-4 hover:bg-white/5 rounded-xl"><i class="fas fa-user"></i> <span>Kelola akun</span></div>
+            <div class="flex items-center gap-4 p-4 hover:bg-white/5 rounded-xl"><i class="fas fa-lock"></i> <span>Privasi</span></div>
+            <div class="flex items-center gap-4 p-4 hover:bg-white/5 rounded-xl"><i class="fas fa-wallet"></i> <span>Saldo</span></div>
+            <div class="flex items-center gap-4 p-4 hover:bg-white/5 rounded-xl"><i class="fas fa-qrcode"></i> <span>Kode QR</span></div>
+            <div class="flex items-center gap-4 p-4 hover:bg-white/5 rounded-xl text-red-500"><i class="fas fa-sign-out-alt"></i> <span>Keluar</span></div>
+        </div>
+    </div>
+
+    <nav class="fixed bottom-0 left-0 right-0 h-[65px] bg-black border-t border-white/10 flex justify-around items-center z-[50]">
+        <button onclick="switchTab('home')" class="nav-btn active flex flex-col items-center"><i class="fas fa-home text-lg"></i><span class="text-[9px] mt-1">Beranda</span></button>
+        <button onclick="switchTab('friends')" class="nav-btn flex flex-col items-center"><i class="fas fa-users text-lg"></i><span class="text-[9px] mt-1">Teman</span></button>
+        <div class="w-12 h-8 bg-gradient-to-r from-blue-400 via-white to-red-400 rounded-lg flex items-center justify-center"><i class="fas fa-plus text-black text-xs"></i></div>
+        <button onclick="switchTab('inbox')" class="nav-btn flex flex-col items-center"><i class="fas fa-comment-dots text-lg"></i><span class="text-[9px] mt-1">Kotak masuk</span></button>
+        <button onclick="switchTab('profile')" class="nav-btn flex flex-col items-center"><i class="fas fa-user text-lg"></i><span class="text-[9px] mt-1">Profil</span></button>
     </nav>
 
     <script>
@@ -94,220 +94,75 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let session = JSON.parse(localStorage.getItem('vnio_fix_session')) || { phone: "USR-"+Date.now(), user: prompt("Username:") || "User", avatar: "https://api.dicebear.com/7.x/initials/svg?seed=vnio" };
-        localStorage.setItem('vnio_fix_session', JSON.stringify(session));
+        let session = JSON.parse(localStorage.getItem('vnio_tk_session')) || { 
+            user: prompt("Username TikTok Kamu:") || "User", 
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.random()}` 
+        };
+        localStorage.setItem('vnio_tk_session', JSON.stringify(session));
 
-        let currentRoom = '';
-
-        function switchPage(p) {
-            document.querySelectorAll('.page').forEach(e => e.classList.remove('active'));
-            document.getElementById('page-' + p).classList.add('active');
-            if(p === 'groups') {
-                document.getElementById('back-btn').classList.add('hidden');
-                document.getElementById('room-name').innerText = "VNIO LABS";
-                document.getElementById('room-pp').classList.add('hidden');
-            }
+        // UI Logic
+        function switchTab(tab) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            if(tab === 'home') document.getElementById('page-home').classList.add('active');
+            if(tab === 'profile') document.getElementById('page-profile').classList.add('active');
+            
+            event.currentTarget.classList.add('active');
         }
 
-        function switchRoom(id, name, pp) {
-            currentRoom = id;
-            switchPage('chat');
-            document.getElementById('back-btn').classList.remove('hidden');
-            document.getElementById('room-name').innerText = name;
-            document.getElementById('room-pp').src = pp;
-            document.getElementById('room-pp').classList.remove('hidden');
-            loadChats(id);
+        function toggleSettings() {
+            const menu = document.getElementById('settings-menu');
+            const overlay = document.getElementById('settings-overlay');
+            menu.classList.toggle('show');
+            overlay.classList.toggle('hidden');
         }
 
-        function createGrp() {
-            const n = prompt("Nama Grup Baru:");
-            if(!n) return;
-            const id = "grp_" + Date.now();
-            const pp = "https://api.dicebear.com/7.x/identicon/svg?seed=" + id;
-            db.ref('groups/metadata/' + id).set({ id, name: n, pp, perms: {send:'all'}, admins: {[session.phone]: true} });
-            switchRoom(id, n, pp); // Langsung masuk room
-        }
-
-        function loadChats(id) {
-            db.ref('chats/' + id).on('value', snap => {
-                const feed = document.getElementById('chat-feed');
-                feed.innerHTML = snap.val() ? Object.values(snap.val()).map(m => `
-                    <div class="tg-bubble ${m.phone === session.phone ? 'tg-bubble-me' : ''}">
-                        <p class="text-[9px] text-blue-400 font-bold">${m.user}</p>
-                        <p class="text-sm">${m.msg}</p>
-                    </div>
-                `).join('') : '<p class="text-center text-zinc-600 text-xs mt-10">Belum ada pesan</p>';
-                feed.scrollTop = feed.scrollHeight;
+        // TIKTOK VIDEO OBSERVER (AUTO PLAY/PAUSE)
+        const videoObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const video = entry.target.querySelector('video');
+                if (entry.isIntersecting) {
+                    video.play();
+                } else {
+                    video.pause();
+                    video.currentTime = 0; // Reset video saat discroll jauh
+                }
             });
-        }
+        }, { threshold: 0.8 });
 
-        function sendMsg() {
-            const inp = document.getElementById('chat-input');
-            if(!inp.value || !currentRoom) return;
-            db.ref('chats/' + currentRoom).push({ user: session.user, phone: session.phone, msg: inp.value, time: firebase.database.ServerValue.TIMESTAMP });
-            inp.value = "";
-        }
-
-        // --- STORY & TIKTOK SYSTEM (NATIVE FILE) ---
-        function upStory(input) {
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                db.ref('stories').push({ user: session.user, img: e.target.result, time: firebase.database.ServerValue.TIMESTAMP });
-                alert("Story Terkirim!");
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function upVideo(input) {
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                db.ref('global_videos').push({ user: session.user, video: e.target.result, likes: 0 });
-                alert("Video Berhasil di TikTok-kan!");
-            };
-            reader.readAsDataURL(file);
-        }
-
-        db.ref('stories').on('value', snap => {
-            document.getElementById('story-list').innerHTML = snap.val() ? Object.values(snap.val()).map(s => `<img src="${s.img}" class="w-14 h-14 rounded-full border-2 border-blue-500 p-0.5 object-cover">`).join('') : '';
-        });
-
+        // LOAD VIDEOS FROM FIREBASE (Use Bot-Tester to inject MP4 links)
         db.ref('global_videos').on('value', snap => {
             const feed = document.getElementById('tt-feed');
-            feed.innerHTML = snap.val() ? Object.values(snap.val()).map(v => `
-                <div class="tt-video">
-                    <video src="${v.video}" class="w-full h-full object-contain" loop onclick="this.paused ? this.play() : this.pause()"></video>
-                    <div class="tt-side">
-                        <div class="text-center"><i class="fas fa-heart text-2xl"></i><p class="text-[10px] mt-1">${v.likes || 0}</p></div>
-                        <div class="text-center"><i class="fas fa-comment text-2xl"></i><p class="text-[10px] mt-1">0</p></div>
-                        <div class="text-center"><i class="fas fa-share text-2xl"></i></div>
+            const videos = snap.val();
+            if(!videos) return feed.innerHTML = "<p class='text-center mt-20 text-zinc-500'>Beranda Kosong. Suntik video via Bot-Tester.</p>";
+            
+            feed.innerHTML = Object.values(videos).reverse().map(v => `
+                <div class="tt-video-card">
+                    <video src="${v.video}" loop playsinline></video>
+                    <div class="absolute bottom-6 left-4 right-12">
+                        <p class="font-bold text-sm">@${v.user}</p>
+                        <p class="text-xs text-white/80 mt-1">Video inspirasi hari ini #fyp #vnioapp</p>
+                    </div>
+                    <div class="absolute right-3 bottom-10 flex flex-col gap-5 items-center">
+                        <div class="w-12 h-12 rounded-full border border-white p-0.5 bg-black">
+                            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${v.user}" class="rounded-full">
+                        </div>
+                        <div class="text-center"><i class="fas fa-heart text-2xl"></i><p class="text-[10px] font-bold">${v.likes || 0}</p></div>
+                        <div class="text-center"><i class="fas fa-comment text-2xl"></i><p class="text-[10px] font-bold">42</p></div>
+                        <div class="text-center"><i class="fas fa-share text-2xl"></i><p class="text-[10px] font-bold">Bagikan</p></div>
                     </div>
                 </div>
-            `).join('') : '';
+            `).join('');
+
+            document.querySelectorAll('.tt-video-card').forEach(card => videoObserver.observe(card));
         });
 
-        db.ref('groups/metadata').on('value', snap => {
-            const list = document.getElementById('group-list');
-            list.innerHTML = snap.val() ? Object.values(snap.val()).map(g => `
-                <div onclick="switchRoom('${g.id}', '${g.name}', '${g.pp}')" class="flex items-center gap-4 p-3 hover:bg-white/5 cursor-pointer">
-                    <img src="${g.pp}" class="w-12 h-12 rounded-full">
-                    <div class="flex-1 border-b border-white/5 pb-2">
-                        <p class="font-bold text-sm">${g.name}</p>
-                        <p class="text-xs text-zinc-500">Ketuk untuk bergabung...</p>
-                    </div>
-                </div>
-            `).join('') : '';
-        });
-    </script>
-</body>
-</html>
-    <script>
-        const firebaseConfig = { databaseURL: "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // PERSISTENT ACCOUNT
-        let session = JSON.parse(localStorage.getItem('vnio_ultimate_session'));
-        if(!session) {
-            const n = prompt("Username Telegram:");
-            session = { phone: "TG-" + Date.now(), user: n || "Anon", avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${n}` };
-            localStorage.setItem('vnio_ultimate_session', JSON.stringify(session));
-        }
-
-        let currentRoom = 'global';
-        let groupMeta = null;
-
-        function switchPage(p) {
-            document.querySelectorAll('.page').forEach(e => e.classList.remove('active'));
-            document.getElementById('page-' + p).classList.add('active');
-        }
-
-        function switchRoom(id) {
-            currentRoom = id;
-            db.ref('chats/' + id).off();
-            if(id === 'global') {
-                document.getElementById('room-pfp').classList.add('hidden');
-                document.getElementById('room-name').innerText = "VNIO LABS";
-                document.getElementById('btn-settings').classList.add('hidden');
-            } else {
-                db.ref('groups/metadata/' + id).on('value', snap => {
-                    groupMeta = snap.val();
-                    if(!groupMeta) return;
-                    document.getElementById('room-pfp').src = groupMeta.pp;
-                    document.getElementById('room-pfp').classList.remove('hidden');
-                    document.getElementById('room-name').innerText = groupMeta.name;
-                    document.getElementById('btn-settings').classList.remove('hidden');
-                    
-                    const isAdmin = groupMeta.admins && groupMeta.admins[session.phone];
-                    document.getElementById('chat-input').disabled = (groupMeta.perms.send === 'admin' && !isAdmin);
-                });
-            }
-            loadMessages(id);
-        }
-
-        function loadMessages(room) {
-            db.ref('chats/' + room).limitToLast(50).on('value', snap => {
-                const list = snap.val();
-                const feed = document.getElementById('chat-feed');
-                feed.innerHTML = list ? Object.values(list).map(m => {
-                    const isMe = m.phone === session.phone;
-                    if(m.role === 'bot') return `<div class="flex justify-center my-4"><div class="bg-black/20 border border-blue-500/10 px-5 py-1 rounded-full text-[9px] text-blue-400 font-bold uppercase tracking-widest">${m.msg}</div></div>`;
-                    return `
-                        <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
-                            <div class="tg-bubble ${isMe ? 'tg-bubble-me' : ''} p-2 px-3 shadow-xl">
-                                <p class="text-[7px] font-black text-blue-400 mb-0.5 uppercase">${m.user} ${groupMeta?.admins?.[m.phone] ? '✓' : ''}</p>
-                                <p class="text-[13px] leading-relaxed text-zinc-100">${m.msg}</p>
-                            </div>
-                        </div>`;
-                }).join('') : "";
-                feed.scrollTop = feed.scrollHeight;
-            });
-        }
-
-        function sendMsg() {
-            const inp = document.getElementById('chat-input');
-            if(!inp.value.trim()) return;
-            db.ref('chats/' + currentRoom).push({ user: session.user, phone: session.phone, msg: inp.value, time: firebase.database.ServerValue.TIMESTAMP });
-            inp.value = "";
-        }
-
-        // --- STORY & VIDEO LOGIC (NO PANGKAS) ---
-        function addStory() {
-            const url = prompt("URL Gambar Story:");
-            if(url) db.ref('stories').push({ user: session.user, img: url, time: firebase.database.ServerValue.TIMESTAMP });
-        }
-        db.ref('stories').on('value', snap => {
-            const container = document.getElementById('story-container');
-            container.innerHTML = snap.val() ? Object.values(snap.val()).map(s => `<img src="${s.img}" class="w-14 h-14 rounded-full object-cover story-ring">`).join('') : "";
-        });
-
-        function uploadVideo() {
-            const url = prompt("URL MP4 Video:");
-            const d = prompt("Deskripsi:");
-            if(url) db.ref('global_videos').push({ user: session.user, video: url, desc: d });
-        }
-        db.ref('global_videos').on('value', snap => {
-            const grid = document.getElementById('video-grid');
-            grid.innerHTML = snap.val() ? Object.values(snap.val()).reverse().map(v => `<div class="video-card"><video src="${v.video}" class="w-full h-full object-cover" loop muted onclick="this.play()"></video></div>`).join('') : "";
-        });
-
-        // SETTINGS & GROUPS
-        function openSettings() { document.getElementById('modal-settings').classList.remove('hidden'); }
-        function closeSettings() { document.getElementById('modal-settings').classList.add('hidden'); }
-        function saveGroupSettings() {
-            const up = { name: document.getElementById('edit-name-input').value, pp: document.getElementById('edit-pp-input').value, perms: { send: document.getElementById('check-admin-lock').checked ? 'admin' : 'all' } };
-            db.ref('groups/metadata/' + currentRoom).update(up).then(() => closeSettings());
-        }
-        function createNewGroup() {
-            const n = prompt("Nama Channel:");
-            if(!n) return;
-            const id = "grp_" + Date.now();
-            const meta = { id, name: n, pp: "https://api.dicebear.com/7.x/shapes/svg?seed="+id, admins: {[session.phone]: true}, perms: {send: 'all'} };
-            db.ref('groups/metadata/'+id).set(meta).then(() => switchRoom(id));
-        }
-
-        window.onload = () => { document.getElementById('my-pfp').src = session.avatar; switchRoom('global'); };
+        window.onload = () => {
+            document.getElementById('user-display').innerText = session.user;
+            document.getElementById('user-handle').innerText = session.user.toLowerCase();
+            document.getElementById('profile-img').src = session.avatar;
+        };
     </script>
 </body>
 </html>
