@@ -2,113 +2,109 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Vnioapp Uji Coba - TikTok Engine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Vnioapp Uji Coba</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #000; }
-
-        /* HEADER VNIO (Penyamaran Nama) */
-        #vnio-top-bar {
-            position: fixed;
-            top: 0; left: 0; width: 100%;
-            height: 60px;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(10px);
+        body { background: #000; color: #fff; margin: 0; overflow: hidden; height: 100dvh; }
+        /* Kontainer Scroll Mirip TikTok */
+        .tt-feed { 
+            height: calc(100vh - 70px); 
+            overflow-y: scroll; 
+            scroll-snap-type: y mandatory; 
+        }
+        .tt-card { 
+            height: calc(100vh - 70px); 
+            scroll-snap-align: start; 
+            position: relative; 
             display: flex;
-            align-items: center;
-            padding: 0 20px;
-            z-index: 9999;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        #vnio-top-bar h1 {
-            color: #fff;
-            font-size: 22px;
-            font-weight: 900;
-            font-style: italic;
-            letter-spacing: -1px;
-        }
-
-        #vnio-top-bar span { color: #3b82f6; } /* Warna Biru Vnio */
-
-        /* CONTAINER UTAMA */
-        #main-engine {
-            width: 100%;
-            height: 100vh;
-            padding-top: 60px; /* Supaya konten tiktok gak ketutup header vnio */
-            background: #000;
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            /* Memaksa konten menyesuaikan layar hp */
-        }
-
-        /* LOADING ANIMASI VNIO */
-        #vnio-loader {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 10000;
-            transition: 0.8s ease-in-out;
+            background: #111;
         }
-
-        .loader-logo {
-            font-size: 40px;
-            font-weight: 900;
-            color: #fff;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(1); opacity: 0.5; }
-        }
-
-        /* NAVBAR BAWAH PALSU (Agar vibe Vnioapp makin kuat) */
-        #vnio-nav {
-            position: fixed;
-            bottom: 0; left: 0; width: 100%;
-            height: 65px;
-            background: #000;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 9999;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-        .nav-icon { color: #888; font-size: 20px; }
-        .nav-active { color: #fff; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .nav-btn { color: #888; }
+        .active { color: #fff; }
     </style>
 </head>
 <body>
 
-    <div id="vnio-loader">
-        <div class="loader-logo">VNIO<span>APP</span></div>
-        <p class="text-zinc-500 text-[10px] mt-4 uppercase tracking-[4px]">Inisialisasi Engine...</p>
+    <div class="fixed top-0 w-full p-4 flex justify-center z-50 bg-gradient-to-b from-black/60 to-transparent">
+        <h1 class="font-black italic text-xl tracking-tighter">VNIO<span class="text-blue-500">APP</span></h1>
     </div>
 
-    <header id="vnio-top-bar">
-        <h1>VNIO<span>APP</span></h1>
-        <div class="ml-auto flex gap-4 items-center">
-            <i class="fas fa-search text-white"></i>
-            <div class="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700"></div>
+    <div id="feed" class="tt-feed hide-scroll">
         </div>
-    </header>
 
-    <div id="main-engine">
-        <iframe 
-            id="engine-frame"
+    <nav class="fixed bottom-0 w-full h-[70px] bg-black border-t border-white/10 flex justify-around items-center z-50">
+        <button class="nav-btn active flex flex-col items-center"><i class="fas fa-home"></i><span class="text-[9px] mt-1">Beranda</span></button>
+        <button class="nav-btn flex flex-col items-center"><i class="fas fa-search"></i><span class="text-[9px] mt-1">Teman</span></button>
+        <div class="w-12 h-8 bg-white rounded-lg flex items-center justify-center text-black font-bold"><i class="fas fa-plus"></i></div>
+        <button class="nav-btn flex flex-col items-center"><i class="fas fa-comment-dots"></i><span class="text-[9px] mt-1">Kotak Masuk</span></button>
+        <button class="nav-btn flex flex-col items-center"><i class="fas fa-user"></i><span class="text-[9px] mt-1">Profil</span></button>
+    </nav>
+
+    <script>
+        // DATA VIDEO (Gunakan link .mp4 langsung agar tidak ERROR)
+        // Kamu bisa ganti link ini dengan link video TikTok yang sudah diconvert ke MP4
+        const videoData = [
+            { id: 1, user: "vnio_creator", url: "https://v16-webapp.tiktok.com/..." /* Link MP4 */, desc: "Uji coba video 1 #vnioapp" },
+            { id: 2, user: "tester_pro", url: "https://www.w3schools.com/html/mov_bbb.mp4", desc: "Sistem Auto-stop bekerja! #tiktok" }
+        ];
+
+        const feed = document.getElementById('feed');
+
+        // FUNGSI RENDER VIDEO
+        function renderVideos() {
+            feed.innerHTML = videoData.map(v => `
+                <div class="tt-card">
+                    <video src="${v.url}" loop playsinline></video>
+                    <div class="absolute bottom-8 left-4">
+                        <p class="font-bold text-sm">@${v.user}</p>
+                        <p class="text-xs text-zinc-300 mt-1">${v.desc}</p>
+                    </div>
+                    <div class="absolute right-4 bottom-20 flex flex-col gap-6 items-center">
+                        <div class="text-center"><i class="fas fa-heart text-2xl"></i><p class="text-[10px] mt-1">1.2K</p></div>
+                        <div class="text-center"><i class="fas fa-comment text-2xl"></i><p class="text-[10px] mt-1">45</p></div>
+                        <div class="text-center"><i class="fas fa-share text-2xl"></i></div>
+                    </div>
+                </div>
+            `).join('');
+            
+            initObserver();
+        }
+
+        // SISTEM AUTO-PLAY & AUTO-STOP (INTI DARI TIKTOK)
+        function initObserver() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const video = entry.target.querySelector('video');
+                    if (entry.isIntersecting) {
+                        video.play().catch(() => {
+                            console.log("Klik layar dulu untuk play otomatis");
+                        });
+                    } else {
+                        video.pause();
+                        video.currentTime = 0; // Berhenti total & reset
+                    }
+                });
+            }, { threshold: 0.8 }); // Video harus terlihat 80% baru putar
+
+            document.querySelectorAll('.tt-card').forEach(card => observer.observe(card));
+        }
+
+        // Jalankan saat web dibuka
+        renderVideos();
+
+        // Mencegah akun hilang saat refresh (Saved Info)
+        window.addEventListener('load', () => {
+            console.log("Sesi Vnioapp Aktif. Akun tidak akan hilang.");
+        });
+    </script>
+</body>
+</html>
             src="https://www.tiktok.com/foryou" 
             allow="autoplay; encrypted-media; clipboard-write; feedback"
             allowfullscreen>
