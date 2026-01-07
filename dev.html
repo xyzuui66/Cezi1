@@ -2,110 +2,93 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>CeziDev v12.7 - Command Center</title>
+    <title>Vnioapp Master Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>body { background: #050505; color: #fff; font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="p-8">
-    <div class="max-w-7xl mx-auto">
-        <header class="flex flex-col md:row justify-between items-center mb-10 bg-zinc-900/50 p-10 rounded-[40px] border border-white/5">
-            <div>
-                <h1 class="text-3xl font-black italic uppercase italic">Cezi<span class="text-blue-500">Dev</span></h1>
-                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mt-2">Titanium Control Active</p>
-            </div>
-            <div class="flex gap-4">
-                <button onclick="toggleSystem('maintenance')" class="bg-red-600/10 text-red-500 px-6 py-4 rounded-2xl text-[10px] font-black uppercase border border-red-500/20">Toggle Maintenance</button>
-            </div>
-        </header>
+<body class="bg-black text-white p-6">
+    <div class="flex justify-between items-center mb-10 border-b border-white/5 pb-6">
+        <div>
+            <h1 class="text-2xl font-black text-blue-500 italic">VNIOAPP <span class="text-white text-xs">MASTER CONTROL</span></h1>
+            <p id="server-status-label" class="text-[9px] font-bold mt-1 uppercase"></p>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="db.ref('server_status').set('open')" class="bg-green-600 px-5 py-2 rounded-xl text-[10px] font-black">OPEN SERVER</button>
+            <button onclick="db.ref('server_status').set('maintenance')" class="bg-yellow-600 px-5 py-2 rounded-xl text-[10px] font-black text-black">MAINTENANCE</button>
+        </div>
+    </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="bg-zinc-900/30 p-8 rounded-[40px] border border-white/5">
-                <h2 class="text-xs font-black uppercase text-blue-500 mb-6 tracking-widest">Global Broadcast</h2>
-                <textarea id="b-msg" class="w-full bg-black border border-white/10 p-5 rounded-3xl outline-none font-bold text-xs h-32 mb-4" placeholder="Pesan satu arah ke semua user..."></textarea>
-                <button onclick="sendB()" class="w-full bg-blue-600 py-4 rounded-2xl font-black uppercase text-[10px]">Send Real-time</button>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-zinc-900 p-6 rounded-3xl h-[650px] flex flex-col border border-white/5 shadow-2xl">
+            <h2 class="text-xs font-bold text-zinc-500 uppercase mb-4 tracking-widest">Global Chat Monitor</h2>
+            <div id="dev-chat" class="flex-1 overflow-y-auto space-y-2 mb-4 pr-2"></div>
+            <div class="flex gap-2 bg-black/40 p-2 rounded-2xl border border-blue-500/30">
+                <input id="dev-msg-input" type="text" placeholder="Balas sebagai Developer..." class="flex-1 bg-transparent border-none outline-none text-sm p-2 text-white">
+                <button onclick="sendDevChat()" class="bg-blue-600 px-6 py-2 rounded-xl text-xs font-black uppercase">Kirim [DEV]</button>
             </div>
+        </div>
 
-            <div class="lg:col-span-2 bg-zinc-900/30 p-8 rounded-[40px] border border-white/5">
-                <h2 class="text-xs font-black uppercase text-zinc-500 mb-6 tracking-widest">Live User Database</h2>
-                <div id="user-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2">
-                    </div>
-            </div>
-
-            <div class="lg:col-span-3 bg-zinc-900/30 p-8 rounded-[40px] border border-white/5 mt-4">
-                <h2 class="text-xs font-black uppercase text-zinc-600 mb-6 tracking-widest">Real-time Traffic Logs</h2>
-                <div id="log-grid" class="grid grid-cols-2 md:grid-cols-5 gap-4"></div>
-            </div>
+        <div class="bg-zinc-900 p-6 rounded-3xl h-[650px] border border-white/5 overflow-hidden flex flex-col">
+            <h2 class="text-xs font-bold text-zinc-500 uppercase mb-4 tracking-widest">User & Security Tracker</h2>
+            <div id="dev-users" class="flex-1 overflow-y-auto space-y-3 pr-2"></div>
         </div>
     </div>
 
     <script>
-        const API = "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app/";
-
-        async function toggleSystem(key) {
-            const cur = await fetch(`${API}status/${key}.json`).then(r => r.json());
-            await fetch(`${API}status/${key}.json`, { method: 'PUT', body: JSON.stringify(!cur) });
-            alert("Maintenance Mode: " + (!cur));
-        }
-
-        async function sendB() {
-            const m = document.getElementById('b-msg').value;
-            if(!m) return;
-            await fetch(`${API}broadcast.json`, { method: 'POST', body: JSON.stringify({ msg: m, time: new Date().toLocaleTimeString() }) });
-            document.getElementById('b-msg').value = '';
-            alert("Broadcast Sent!");
-        }
-
-        async function ban(p) {
-            if(confirm("Ban user ini?")) {
-                await fetch(`${API}banned/${p}.json`, { method: 'PUT', body: JSON.stringify(true) });
-                sync();
-            }
-        }
-
-        async function unban(p) {
-            await fetch(`${API}banned/${p}.json`, { method: 'DELETE' });
-            sync();
-        }
-
-        const sync = async () => {
-            const r = await fetch(`${API}.json`);
-            const d = await r.json();
-            if(!d) return;
-
-            // Sync User Grid
-            if(d.users) {
-                document.getElementById('user-grid').innerHTML = Object.values(d.users).map(u => {
-                    const isBanned = d.banned && d.banned[u.phone];
-                    return `
-                    <div class="bg-black/60 p-6 rounded-3xl border ${isBanned ? 'border-red-600/30' : 'border-white/5'}">
-                        <div class="flex items-center gap-4 mb-4">
-                            <img src="${u.avatar}" class="w-10 h-10 rounded-full border border-white/10">
-                            <div><p class="text-[10px] font-black uppercase">${u.name}</p><p class="text-[8px] text-zinc-600 font-bold">${u.email}</p></div>
-                        </div>
-                        <p class="text-[10px] text-blue-500 font-black mb-4">${u.phone}</p>
-                        <div class="flex gap-2">
-                            ${isBanned ? `<button onclick="unban('${u.phone}')" class="flex-1 bg-white text-black py-2 rounded-xl text-[8px] font-black uppercase">Unban</button>` :
-                            `<button onclick="ban('${u.phone}')" class="flex-1 bg-red-600/10 text-red-500 py-2 rounded-xl text-[8px] font-black uppercase">Ban User</button>`}
-                        </div>
-                    </div>`;
-                }).join('');
-            }
-
-            // Sync Logs
-            if(d.user_logs) {
-                const logs = Object.values(d.user_logs).reverse().slice(0, 10);
-                document.getElementById('log-grid').innerHTML = logs.map(l => `
-                    <div class="bg-black p-4 rounded-2xl border border-white/5 text-center">
-                        <p class="text-[9px] font-black text-blue-500 uppercase">${l.u}</p>
-                        <p class="text-[8px] text-zinc-600 mt-1 font-bold">${l.ip}</p>
-                        <p class="text-[7px] text-zinc-700 mt-1">${l.loc}</p>
-                    </div>`).join('');
-            }
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeGnAjNVmoB-uYGWadpFkEyxlPpuTmz2o",
+            authDomain: "ceziroom.firebaseapp.com",
+            databaseURL: "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ceziroom",
+            storageBucket: "ceziroom.firebasestorage.app",
+            messagingSenderId: "771662623358",
+            appId: "1:771662623358:web:de5b7635f3ff27f19fde2f"
         };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        setInterval(sync, 4000);
-        sync();
+        // DEV CHAT LOGIC
+        function sendDevChat() {
+            const i = document.getElementById('dev-msg-input');
+            if(!i.value.trim()) return;
+            db.ref('global_chats').push({ user: "Admin-Vnio", msg: i.value, role: "developer", time: firebase.database.ServerValue.TIMESTAMP });
+            i.value = "";
+        }
+
+        // REAL-TIME MONITORING
+        db.ref('global_chats').on('value', snap => {
+            const d = snap.val();
+            document.getElementById('dev-chat').innerHTML = d ? Object.values(d).reverse().map(c => `
+                <div class="p-3 ${c.role==='developer'?'bg-blue-900/30 border-blue-500':'bg-black/30 border-white/5'} border rounded-xl mb-2">
+                    <p class="text-[9px] font-black ${c.role==='developer'?'text-blue-400':'text-zinc-500'} uppercase">${c.user}</p>
+                    <p class="text-xs mt-1 font-medium text-zinc-200">${c.msg}</p>
+                </div>`).join('') : '<p class="text-center text-zinc-700 py-20 text-xs font-bold">BELUM ADA CHAT</p>';
+        });
+
+        db.ref('users').on('value', snap => {
+            const d = snap.val();
+            document.getElementById('dev-users').innerHTML = d ? Object.values(d).map(u => `
+                <div class="p-4 ${u.status==='banned'?'bg-red-900/10 border-red-500/50':'bg-black/20'} border border-white/5 rounded-2xl flex justify-between items-center transition-all">
+                    <div>
+                        <p class="font-black text-sm ${u.status==='banned'?'text-red-500':'text-blue-500'}">${u.username}</p>
+                        <p class="text-[9px] text-zinc-600 font-mono">${u.phone} | IP: ${u.ip || '0.0.0.0'}</p>
+                        <p class="text-[8px] text-zinc-700 mt-1 uppercase font-bold">PW: ${u.password}</p>
+                    </div>
+                    <button onclick="db.ref('users/${u.phone}/status').set('${u.status==='banned'?'active':'banned'}')" 
+                        class="px-4 py-2 rounded-xl text-[9px] font-black ${u.status==='banned'?'bg-green-600 text-white':'bg-red-600 text-white'}">
+                        ${u.status==='banned'?'UNBAN':'BAN'}
+                    </button>
+                </div>`).join('') : '';
+        });
+
+        db.ref('server_status').on('value', snap => {
+            const s = snap.val() || 'open';
+            const lbl = document.getElementById('server-status-label');
+            lbl.innerText = `STATUS: ${s}`;
+            lbl.className = `text-[9px] font-bold mt-1 uppercase ${s==='maintenance'?'text-yellow-500':'text-green-500'}`;
+        });
     </script>
 </body>
 </html>
