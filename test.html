@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Vnioapp v11.8 - Ultimate Integration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; margin: 0; }
+        
+        /* 1. NOTIFICATION SYSTEM */
+        #vnio-toast {
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: rgba(40, 40, 40, 0.95); backdrop-filter: blur(10px);
+            padding: 12px 25px; border-radius: 50px; font-size: 13px; z-index: 10000;
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.1);
+        }
+        #vnio-toast.show { top: 30px; }
+
+        /* 2. AUTH GATE SYSTEM */
+        .gate-screen { position: fixed; inset: 0; background: #000; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .input-box { background: #1a1a1a; border: 1px solid #333; padding: 15px; border-radius: 12px; width: 100%; outline: none; color: white; margin-bottom: 12px; }
+        
+        /* 3. TIKTOK & WA FEATURES SYSTEM */
+        .tt-container { height: calc(100vh - 70px); overflow-y: scroll; scroll-snap-type: y mandatory; }
+        .tt-card { height: calc(100vh - 70px); scroll-snap-align: start; position: relative; background: #111; display: flex; align-items: center; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="vnio-toast">
+        <i id="toast-icon" class="fas fa-info-circle"></i>
+        <span id="toast-msg">Pesan</span>
+    </div>
+
+    <div id="auth-gate" class="gate-screen">
+        <h1 class="text-4xl font-black italic mb-2 tracking-tighter">VNIO<span class="text-blue-500">APP</span></h1>
+        <p class="text-zinc-500 text-sm mb-10">Gunakan Nomor HP & Username</p>
+
+        <div class="w-full max-w-sm">
+            <div id="step-id">
+                <input id="reg-username" type="text" placeholder="Username (Tanpa Spasi)" class="input-box">
+                <div class="flex gap-2">
+                    <input id="phone-number" type="tel" placeholder="+62..." class="input-box flex-1">
+                    <button id="get-otp-btn" class="bg-zinc-800 px-4 mb-[12px] rounded-lg text-[10px] font-bold text-blue-400">GET OTP</button>
+                </div>
+                <div id="recaptcha-container"></div>
+            </div>
+
+            <div id="step-otp" class="hidden">
+                <input id="otp-code" type="number" placeholder="6 Digit OTP" class="input-box text-center tracking-[10px]">
+                <button id="register-btn" class="w-full bg-[#fe2c55] p-4 rounded-xl font-bold">REGISTER & LOGIN</button>
+            </div>
+        </div>
+    </div>
+
+    <main id="main-app" class="hidden h-full">
+        <header class="fixed top-0 w-full p-4 flex justify-between z-50 bg-gradient-to-b from-black/80 to-transparent">
+            <span class="font-bold italic">VNIO<span class="text-blue-400">APP</span></span>
+            <div class="flex gap-4 items-center">
+                <span id="display-user" class="text-xs font-bold text-zinc-300">@user</span>
+                <i onclick="doLogout()" class="fas fa-sign-out-alt text-red-500"></i>
+            </div>
+        </header>
+
+        <div id="tt-feed" class="tt-container hide-scroll">
+            <div class="tt-card">
+                <video src="https://www.w3schools.com/html/mov_bbb.mp4" loop playsinline autoplay muted></video>
+                <div class="absolute bottom-24 left-4">
+                    <p class="font-bold">@vnio_official</p>
+                    <p class="text-xs opacity-70">Sistem Terintegrasi v11.8 Sukses!</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="fixed bottom-0 w-full h-[70px] bg-black border-t border-white/10 flex justify-around items-center z-[100]">
+            <i class="fas fa-home text-white"></i>
+            <i class="fas fa-comment-dots text-zinc-500"></i>
+            <div class="w-12 h-8 bg-white rounded-lg flex items-center justify-center text-black"><i class="fas fa-plus"></i></div>
+            <i class="fas fa-users text-zinc-500"></i>
+            <i class="fas fa-user text-zinc-500"></i>
+        </nav>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeGnAjNVmoB-uYGWadpFkEyxlPpuTmz2o",
+            authDomain: "ceziroom.firebaseapp.com",
+            databaseURL: "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ceziroom",
+            storageBucket: "ceziroom.firebasestorage.app",
+            messagingSenderId: "771662623358",
+            appId: "1:771662623358:web:05eb62bc74e8e06e9fde2f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        let confirmationResult;
+
+        // --- CUSTOM TOAST NOTIFICATION ---
+        function notify(msg, type = 'info') {
+            const toast = document.getElementById('vnio-toast');
+            const icon = document.getElementById('toast-icon');
+            document.getElementById('toast-msg').innerText = msg;
+            icon.className = type === 'error' ? "fas fa-exclamation-circle text-red-500" : (type === 'success' ? "fas fa-check-circle text-green-500" : "fas fa-info-circle text-blue-500");
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // --- AUTH LOGIC ---
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+
+        document.getElementById('get-otp-btn').addEventListener('click', async () => {
+            const phone = document.getElementById('phone-number').value;
+            const uname = document.getElementById('reg-username').value;
+            if(!phone || !uname) return notify("Lengkapi data!", "error");
+
+            try {
+                confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
+                document.getElementById('step-id').classList.add('hidden');
+                document.getElementById('step-otp').classList.remove('hidden');
+                notify("OTP terkirim ke HP Anda", "success");
+            } catch (e) { notify("Error: " + e.message, "error"); }
+        });
+
+        document.getElementById('register-btn').addEventListener('click', async () => {
+            const code = document.getElementById('otp-code').value;
+            const uname = document.getElementById('reg-username').value;
+            try {
+                const res = await confirmationResult.confirm(code);
+                await set(ref(db, 'users/' + res.user.uid), { username: uname, phone: res.user.phoneNumber, joined: Date.now() });
+                notify("Register Berhasil!", "success");
+                enterApp(uname);
+            } catch (e) { notify("OTP Salah!", "error"); }
+        });
+
+        function enterApp(uname) {
+            document.getElementById('display-user').innerText = "@" + uname;
+            document.getElementById('auth-gate').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snapshot = await get(ref(db, 'users/' + user.uid));
+                if (snapshot.exists()) enterApp(snapshot.val().username);
+            }
+        });
+
+        window.doLogout = () => signOut(auth).then(() => location.reload());
+    </script>
+</body>
+</html>
+  
