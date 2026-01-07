@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Vnioapp v11.8 - Ultimate Integration</title>
+    <title>Vnioapp v11.8 - WA OTP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background: #000; color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; margin: 0; }
         
-        /* 1. NOTIFICATION SYSTEM */
+        /* 1. NOTIFICATION SYSTEM (VNIO POP-UP) */
         #vnio-toast {
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
             background: rgba(40, 40, 40, 0.95); backdrop-filter: blur(10px);
@@ -19,11 +19,12 @@
         }
         #vnio-toast.show { top: 30px; }
 
-        /* 2. AUTH GATE SYSTEM */
+        /* 2. AUTH GATE SCREEN */
         .gate-screen { position: fixed; inset: 0; background: #000; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         .input-box { background: #1a1a1a; border: 1px solid #333; padding: 15px; border-radius: 12px; width: 100%; outline: none; color: white; margin-bottom: 12px; }
-        
-        /* 3. TIKTOK & WA FEATURES SYSTEM */
+        .btn-otp { background: #25D366; color: white; padding: 10px 15px; border-radius: 10px; font-weight: bold; font-size: 11px; margin-bottom: 12px; }
+
+        /* 3. TIKTOK FEED STYLE (v11.5) */
         .tt-container { height: calc(100vh - 70px); overflow-y: scroll; scroll-snap-type: y mandatory; }
         .tt-card { height: calc(100vh - 70px); scroll-snap-align: start; position: relative; background: #111; display: flex; align-items: center; }
         video { width: 100%; height: 100%; object-fit: cover; }
@@ -41,21 +42,20 @@
 
     <div id="auth-gate" class="gate-screen">
         <h1 class="text-4xl font-black italic mb-2 tracking-tighter">VNIO<span class="text-blue-500">APP</span></h1>
-        <p class="text-zinc-500 text-sm mb-10">Gunakan Nomor HP & Username</p>
+        <p class="text-zinc-500 text-sm mb-10">Verifikasi OTP via WhatsApp</p>
 
         <div class="w-full max-w-sm">
             <div id="step-id">
-                <input id="reg-username" type="text" placeholder="Username (Tanpa Spasi)" class="input-box">
+                <input id="reg-username" type="text" placeholder="Buat Username" class="input-box">
                 <div class="flex gap-2">
-                    <input id="phone-number" type="tel" placeholder="+62..." class="input-box flex-1">
-                    <button id="get-otp-btn" class="bg-zinc-800 px-4 mb-[12px] rounded-lg text-[10px] font-bold text-blue-400">GET OTP</button>
+                    <input id="phone-number" type="tel" placeholder="Nomor WA (08...)" class="input-box flex-1">
+                    <button id="get-otp-btn" class="btn-otp">GET OTP</button>
                 </div>
-                <div id="recaptcha-container"></div>
             </div>
 
             <div id="step-otp" class="hidden">
-                <input id="otp-code" type="number" placeholder="6 Digit OTP" class="input-box text-center tracking-[10px]">
-                <button id="register-btn" class="w-full bg-[#fe2c55] p-4 rounded-xl font-bold">REGISTER & LOGIN</button>
+                <input id="otp-code" type="number" placeholder="6 Digit Kode WA" class="input-box text-center tracking-[10px]">
+                <button id="register-btn" class="w-full bg-[#fe2c55] p-4 rounded-xl font-bold">DAFTAR & MASUK</button>
             </div>
         </div>
     </div>
@@ -65,7 +65,7 @@
             <span class="font-bold italic">VNIO<span class="text-blue-400">APP</span></span>
             <div class="flex gap-4 items-center">
                 <span id="display-user" class="text-xs font-bold text-zinc-300">@user</span>
-                <i onclick="doLogout()" class="fas fa-sign-out-alt text-red-500"></i>
+                <i onclick="doLogout()" class="fas fa-sign-out-alt text-red-500 cursor-pointer"></i>
             </div>
         </header>
 
@@ -73,8 +73,8 @@
             <div class="tt-card">
                 <video src="https://www.w3schools.com/html/mov_bbb.mp4" loop playsinline autoplay muted></video>
                 <div class="absolute bottom-24 left-4">
-                    <p class="font-bold">@vnio_official</p>
-                    <p class="text-xs opacity-70">Sistem Terintegrasi v11.8 Sukses!</p>
+                    <p class="font-bold" id="video-owner">@vnio_official</p>
+                    <p class="text-xs opacity-70">Sistem WhatsApp OTP Aktif! v11.8</p>
                 </div>
             </div>
         </div>
@@ -90,25 +90,100 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
         import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBeGnAjNVmoB-uYGWadpFkEyxlPpuTmz2o",
-            authDomain: "ceziroom.firebaseapp.com",
             databaseURL: "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "ceziroom",
-            storageBucket: "ceziroom.firebasestorage.app",
-            messagingSenderId: "771662623358",
             appId: "1:771662623358:web:05eb62bc74e8e06e9fde2f"
         };
-
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getDatabase(app);
-        let confirmationResult;
 
-        // --- CUSTOM TOAST NOTIFICATION ---
+        // --- FONNTE TOKEN TERPASANG ---
+        const fonnteToken = "qzMuuPK4rLnVkjoG8sFH"; 
+        let generatedOTP;
+
+        function notify(msg, type = 'info') {
+            const toast = document.getElementById('vnio-toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // --- STEP 1: KIRIM OTP ---
+        document.getElementById('get-otp-btn').addEventListener('click', async () => {
+            const phone = document.getElementById('phone-number').value;
+            const uname = document.getElementById('reg-username').value;
+            if(!phone || !uname) return notify("Isi Username & Nomor WA!", "error");
+
+            generatedOTP = Math.floor(100000 + Math.random() * 900000);
+
+            try {
+                notify("Mengirim pesan WA...", "info");
+                const response = await fetch('https://api.fonnte.com/send', {
+                    method: 'POST',
+                    headers: { 'Authorization': fonnteToken },
+                    body: new URLSearchParams({
+                        'target': phone,
+                        'message': `VNIOAPP: Kode rahasia Anda adalah *${generatedOTP}*. Jangan berikan kode ini kepada siapapun demi keamanan akun.`
+                    })
+                });
+
+                const data = await response.json();
+                if(data.status) {
+                    document.getElementById('step-id').classList.add('hidden');
+                    document.getElementById('step-otp').classList.remove('hidden');
+                    notify("OTP Terkirim ke WA!", "success");
+                } else {
+                    notify("Error: " + data.reason, "error");
+                }
+            } catch (e) { notify("Gagal koneksi ke server WA", "error"); }
+        });
+
+        // --- STEP 2: VERIFIKASI & MASUK ---
+        document.getElementById('register-btn').addEventListener('click', async () => {
+            const code = document.getElementById('otp-code').value;
+            const uname = document.getElementById('reg-username').value;
+            const phone = document.getElementById('phone-number').value;
+
+            if(code == generatedOTP) {
+                // Simpan User ke Firebase (biar data nggak hilang saat refresh)
+                const userRef = ref(db, 'users/' + uname);
+                await set(userRef, { username: uname, phone: phone, loginTime: Date.now() });
+
+                // Simpan status login di Browser (LocalStorage) agar tidak hilang saat refresh
+                localStorage.setItem("vnio_user", uname);
+
+                enterApp(uname);
+                notify("Selamat Datang!", "success");
+            } else {
+                notify("Kode OTP Salah!", "error");
+            }
+        });
+
+        function enterApp(uname) {
+            document.getElementById('display-user').innerText = "@" + uname;
+            document.getElementById('auth-gate').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+        }
+
+        // --- STEP 3: PERSISTENCE (CEK APAKAH SUDAH LOGIN SEBELUMNYA) ---
+        window.addEventListener('load', () => {
+            const savedUser = localStorage.getItem("vnio_user");
+            if(savedUser) {
+                enterApp(savedUser);
+            }
+        });
+
+        window.doLogout = () => {
+            localStorage.removeItem("vnio_user");
+            location.reload();
+        };
+    </script>
+</body>
+</html>
         function notify(msg, type = 'info') {
             const toast = document.getElementById('vnio-toast');
             const icon = document.getElementById('toast-icon');
