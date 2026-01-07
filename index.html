@@ -3,113 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CeziRooms v12.7 - Titanium Edition</title>
+    <title>Project Vnioapp v11.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; color: #fff; height: 100dvh; overflow: hidden; margin: 0; }
-        .ios-blur { background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); }
-        .page { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); transform: translateY(10px); overflow-y: auto; padding-bottom: 160px; }
-        .page.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 30px; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        input, textarea { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
-        #ban-screen, #maint-screen { z-index: 999999; display: none; background: #000; position: fixed; inset: 0; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .msg-pop { animation: msgPop 0.3s ease-out; }
-        @keyframes msgPop { from { opacity: 0; transform: translateY(10px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .ios-blur { background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; }
+        .page { display: none; height: 100%; overflow-y: auto; padding-bottom: 240px; }
+        .page.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .input-vnio { background: #121212; border: 1px solid #333; border-radius: 16px; padding: 12px 18px; width: 100%; color: white; font-size: 13px; margin-bottom: 10px; outline: none; }
+        #maintenance-screen, #banned-screen { display: none; position: fixed; inset: 0; z-index: 10000; background: #000; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .maintenance-active #maintenance-screen, .is-banned #banned-screen { display: flex; }
+        .msg-dev { background: linear-gradient(to right, #1e3a8a, #3b82f6) !important; border: 1px solid #60a5fa !important; }
+        .msg-ai { background: linear-gradient(135deg, #4f46e5, #9333ea) !important; border: none !important; }
+        .dot { width: 4px; height: 4px; background: #fff; border-radius: 50%; animation: wave 1.3s infinite; }
+        @keyframes wave { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
     </style>
 </head>
 <body>
 
-    <div id="ban-screen">
+    <div id="banned-screen" class="p-10">
         <i class="fas fa-user-slash text-6xl text-red-600 mb-6"></i>
-        <h1 class="text-2xl font-black uppercase tracking-tighter">Akses Dibatasi</h1>
-        <p class="text-zinc-500 text-[10px] font-bold mt-4 px-10 uppercase tracking-[0.3em]">Device Anda telah diblokir secara permanen</p>
+        <h1 class="text-3xl font-black italic text-red-600 uppercase">Akses Diblokir</h1>
+        <p class="text-zinc-500 text-xs mt-4 font-bold tracking-widest">Akun Anda telah di-banned oleh Developer.</p>
     </div>
 
-    <div id="maint-screen">
-        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-6"></div>
-        <h1 class="text-xl font-black uppercase italic">System Update</h1>
-        <p class="text-zinc-500 text-[9px] font-bold uppercase mt-2">Sedang Diperbaiki oleh Web Dev</p>
+    <div id="maintenance-screen" class="p-10">
+        <i class="fas fa-tools text-5xl text-yellow-500 mb-6 animate-bounce"></i>
+        <h1 class="text-3xl font-black italic uppercase">Maintenance</h1>
+        <p class="text-zinc-500 text-xs mt-4 font-bold tracking-widest">Server sedang dalam pemeliharaan rutin.</p>
     </div>
 
-    <div id="auth-layer" class="fixed inset-0 z-[10000] bg-black hidden flex flex-col items-center justify-center p-8 overflow-y-auto">
-        <h1 class="text-4xl font-black italic mb-2 uppercase tracking-tighter">Cezi<span class="text-blue-500">Rooms</span></h1>
-        <p class="text-[9px] font-black text-zinc-600 tracking-[0.5em] mb-10 uppercase text-center">Cloud Security v12.7</p>
-        
-        <div class="w-full max-w-xs space-y-3">
-            <input id="reg-name" type="text" placeholder="Username" class="w-full p-5 rounded-2xl outline-none font-bold text-center text-sm">
-            <input id="reg-phone" type="number" placeholder="Nomor HP (62...)" class="w-full p-5 rounded-2xl outline-none font-bold text-center text-sm">
-            <input id="reg-email" type="email" placeholder="Alamat Email" class="w-full p-5 rounded-2xl outline-none font-bold text-center text-sm">
-            <input id="reg-pass" type="password" placeholder="Sandi Keamanan" class="w-full p-5 rounded-2xl outline-none font-bold text-center text-sm">
-            <button onclick="handleLogin()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-[10px] shadow-xl shadow-blue-600/20 active:scale-95 transition">Daftar & Masuk</button>
+    <div id="auth-modal" class="fixed inset-0 z-[100] bg-black flex items-center justify-center p-8 hidden overflow-y-auto">
+        <div class="w-full max-w-sm text-center py-10">
+            <h1 class="text-4xl font-black italic tracking-tighter mb-2">VNIO<span class="text-blue-500">APP</span></h1>
+            <p class="text-zinc-500 text-[10px] mb-8 uppercase font-bold tracking-widest tracking-tighter">Project Vnioapp Registration</p>
+            <input id="login-phone" type="tel" placeholder="Nomor HP" class="input-vnio">
+            <input id="login-email" type="email" placeholder="Email" class="input-vnio">
+            <input id="login-name" type="text" placeholder="Username" class="input-vnio">
+            <div class="relative"><input id="login-pass" type="text" placeholder="Sandi" class="input-vnio"><button onclick="genPass()" class="absolute right-3 top-2.5 text-[9px] bg-blue-600 px-2 py-1 rounded text-white font-bold">ACAK</button></div>
+            <button onclick="handleAuth()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold mt-4 shadow-lg shadow-blue-600/20">Daftar & Masuk</button>
         </div>
     </div>
 
     <div class="flex flex-col h-full">
-        <header class="p-6 pt-12 flex justify-between items-center ios-blur border-b border-white/5 z-50">
-            <span class="text-xl font-black italic tracking-tighter uppercase">Cezi<span class="text-blue-500">Rooms</span></span>
-            <div class="flex items-center gap-3">
-                <div class="text-right hidden sm:block">
-                    <p id="nav-name" class="text-[10px] font-black uppercase"></p>
-                    <p class="text-[7px] text-green-500 font-bold uppercase tracking-widest">Encrypted</p>
-                </div>
-                <img id="my-av" src="" class="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 object-cover">
-            </div>
+        <header class="p-5 flex justify-between items-center ios-blur border-b border-white/5 shrink-0">
+            <h1 id="logo-vnio" class="text-xl font-extrabold italic tracking-tighter cursor-pointer">VNIO<span class="text-blue-500">APP</span></h1>
+            <img id="user-avatar" class="w-9 h-9 rounded-full border border-white/10 bg-zinc-800 object-cover">
         </header>
 
-        <main class="flex-1 relative">
-            <section id="p-chat" class="page active p-5 no-scrollbar">
-                <div id="res-chat-global" class="space-y-4 mb-32 pt-2"></div>
-                <div class="fixed bottom-28 left-4 right-4 flex gap-2">
-                    <input id="msg-global" type="text" placeholder="Ketik pesan real-time..." class="flex-1 p-5 rounded-2xl outline-none glass font-bold text-sm shadow-2xl">
-                    <button onclick="sendGlobal()" class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition"><i class="fas fa-paper-plane"></i></button>
+        <main class="flex-1 overflow-hidden relative">
+            <section id="page-music" class="page active p-5">
+                <input id="music-search" type="text" placeholder="Cari lagu favorit..." class="input-vnio !rounded-full mb-6">
+                <div id="music-results" class="grid grid-cols-2 gap-4"></div>
+            </section>
+
+            <section id="page-chat" class="page p-5">
+                <div class="glass-card flex flex-col h-[520px]">
+                    <div id="global-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+                    <div class="p-3 border-t border-white/5 flex gap-2">
+                        <input id="chat-input" type="text" placeholder="Ketik pesan..." class="input-vnio !rounded-full !mb-0">
+                        <button onclick="sendChat()" class="bg-blue-600 w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/20"><i class="fas fa-paper-plane text-xs text-white"></i></button>
+                    </div>
                 </div>
             </section>
 
-            <section id="p-info" class="page p-5 no-scrollbar">
-                <h2 class="text-xl font-black italic mb-6 uppercase tracking-tighter">Official <span class="text-blue-500 text-[10px] ml-2 animate-pulse font-bold tracking-widest uppercase border border-blue-500/30 px-2 py-1 rounded">Live</span></h2>
-                <div id="res-ann" class="space-y-4"></div>
+            <section id="page-ai" class="page p-5">
+                <div class="glass-card flex flex-col h-[520px] border-indigo-500/20">
+                    <div id="ai-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+                    <div id="ai-typing" class="px-4 py-2 hidden"><div class="flex gap-1 items-center bg-zinc-900/50 w-fit px-3 py-2 rounded-full"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+                    <div class="p-3 border-t border-white/5 flex gap-2">
+                        <input id="ai-input" type="text" placeholder="Tanya Vnio-AI..." class="input-vnio !rounded-full !mb-0 border-indigo-500/30">
+                        <button onclick="askAI()" class="bg-indigo-600 w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-lg shadow-indigo-600/20"><i class="fas fa-robot text-xs text-white"></i></button>
+                    </div>
+                </div>
             </section>
 
-            <section id="p-music" class="page p-5 no-scrollbar">
-                <div class="glass p-4 mb-6 flex items-center gap-3">
-                    <i class="fas fa-search text-zinc-600"></i>
-                    <input id="m-q" type="text" placeholder="Cari Lagu..." class="bg-transparent outline-none text-sm w-full font-bold">
+            <section id="page-social" class="page p-5">
+                <div class="glass-card p-5 mb-6">
+                    <h3 class="text-[10px] font-bold text-zinc-500 mb-4 uppercase tracking-widest">Tambah Teman (No. HP)</h3>
+                    <div class="flex gap-2"><input id="friend-input" type="tel" placeholder="08..." class="input-vnio !mb-0"><button onclick="addFriend()" class="bg-blue-600 px-6 rounded-2xl font-bold text-xs uppercase">Add</button></div>
                 </div>
-                <div id="res-music" class="grid grid-cols-2 gap-4"></div>
-            </section>
-
-            <section id="p-social" class="page p-5 no-scrollbar">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-black italic uppercase">Social</h2>
-                    <button onclick="createGroup()" class="bg-blue-600 text-[9px] font-black px-4 py-2 rounded-full uppercase">Buat Grup</button>
-                </div>
-                <div class="space-y-4" id="res-groups"></div>
-                <hr class="border-white/5 my-6">
-                <div class="flex gap-2 mb-4">
-                    <input id="f-q" type="number" placeholder="Cari Nomor HP (62...)" class="flex-1 p-4 rounded-xl glass text-xs font-bold outline-none">
-                    <button onclick="findFriend()" class="bg-white text-black px-6 rounded-xl font-black text-[10px]">CARI</button>
-                </div>
-                <div id="res-friends" class="space-y-3"></div>
+                <div id="friend-list" class="space-y-3"></div>
             </section>
         </main>
 
-        <nav class="h-24 ios-blur border-t border-white/5 flex justify-around items-center z-[100]">
-            <div onclick="tab('chat')" id="b-chat" class="text-blue-500 flex-1 text-center py-4"><i class="fas fa-globe-americas text-xl"></i></div>
-            <div onclick="tab('info')" id="b-info" class="text-zinc-500 flex-1 text-center py-4"><i class="fas fa-bullhorn text-xl"></i></div>
-            <div onclick="tab('social')" id="b-social" class="text-zinc-500 flex-1 text-center py-4"><i class="fas fa-users text-xl"></i></div>
-            <div onclick="tab('music')" id="b-music" class="text-zinc-500 flex-1 text-center py-4"><i class="fas fa-compact-disc text-xl"></i></div>
+        <div id="mini-player" class="fixed bottom-28 left-4 right-4 h-16 ios-blur border border-white/10 rounded-3xl p-2 flex items-center gap-3 hidden z-50">
+            <img id="player-art" class="w-12 h-12 rounded-2xl object-cover">
+            <div class="flex-1 overflow-hidden"><p id="player-title" class="text-xs font-bold truncate"></p></div>
+            <audio id="main-audio"></audio>
+            <button onclick="togglePlay()" class="w-10 h-10 bg-white text-black rounded-full shadow-lg"><i id="play-icon" class="fas fa-play"></i></button>
+        </div>
+
+        <nav class="h-24 ios-blur border-t border-white/5 flex justify-around items-center px-4 shrink-0">
+            <div onclick="nav('music')" class="nav-btn text-blue-500 text-center cursor-pointer transition-all"><i class="fas fa-music text-xl"></i></div>
+            <div onclick="nav('chat')" class="nav-btn text-zinc-500 text-center cursor-pointer transition-all"><i class="fas fa-comment-dots text-xl"></i></div>
+            <div onclick="nav('ai')" class="nav-btn text-zinc-500 text-center cursor-pointer transition-all"><i class="fas fa-robot text-xl"></i></div>
+            <div onclick="nav('social')" class="nav-btn text-zinc-500 text-center cursor-pointer transition-all"><i class="fas fa-user-friends text-xl"></i></div>
         </nav>
     </div>
 
     <script>
-        const DB = "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app/";
-        let me = JSON.parse(localStorage.getItem('cezi_v12_user'));
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeGnAjNVmoB-uYGWadpFkEyxlPpuTmz2o",
+            authDomain: "ceziroom.firebaseapp.com",
+            databaseURL: "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ceziroom",
+            storageBucket: "ceziroom.firebasestorage.app",
+            messagingSenderId: "771662623358",
+            appId: "1:771662623358:web:de5b7635f3ff27f19fde2f"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let session = JSON.parse(localStorage.getItem('vnio_session'));
+        let clickCount = 0;
 
-        // --- CORE SYNC ENGINE ---
-        const startInfiniteSync = () => {
+        // AUTH SYSTEM
+        function genPass() { document.getElementById('login-pass').value = Math.random().toString(36).slice(-6).toUpperCase(); }
+
+        async function handleAuth() {
+            const p = document.getElementById('login-phone').value.trim();
+            const e = document.getElementById('login-email').value.trim();
+            const u = document.getElementById('login-name').value.trim();
+            const s = document.getElementById('login-pass').value.trim();
+            if(!p || !e || !u || !s) return alert("Lengkapi data!");
+            const ipRes = await fetch('https://api.ipify.org?format=json');
+            const ipData = await ipRes.json();
+            const userData = { phone:p, email:e, username:u, password:s, ip:ipData.ip, status:'active', avatar:`https://api.dicebear.com/7.x/avataaars/svg?seed=${u}` };
+            db.ref('users/' + p).set(userData).then(() => {
+                localStorage.setItem('vnio_session', JSON.stringify(userData));
+                location.reload();
+            });
+        }
+
+        // REAL-TIME SECURITY (BANNED & MAINTENANCE)
+        function initSecurity() {
+            if(!session) { document.getElementById('auth-modal').classList.remove('hidden'); return; }
+            db.ref('users/' + session.phone).on('value', snap => {
+                const val = snap.val();
+                if(!val || val.status === 'banned') document.body.classList.add('is-banned');
+                else document.body.classList.remove('is-banned');
+            });
+            db.ref('server_status').on('value', snap => {
+                if(snap.val() === 'maintenance') document.body.classList.add('maintenance-active');
+                else document.body.classList.remove('maintenance-active');
+            });
+        }
+
+        // REAL-TIME GLOBAL CHAT
+        function sendChat() {
+            const inp = document.getElementById('chat-input');
+            if(!inp.value.trim()) return;
+            db.ref('global_chats').push({ user: session.username, msg: inp.value, role:'user', time: firebase.database.ServerValue.TIMESTAMP });
+            inp.value = "";
+        }
+
+        db.ref('global_chats').limitToLast(50).on('value', snap => {
+            const box = document.getElementById('global-messages');
+            const data = snap.val();
+            if(!data) return;
+            box.innerHTML = Object.values(data).map(c => {
+                const isMe = c.user === session?.username;
+                const isDev = c.role === 'developer';
+                return `<div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+                    <div class="${isDev ? 'msg-dev' : (isMe ? 'bg-blue-600' : 'bg-zinc-900 border border-white/10')} px-4 py-2 rounded-2xl max-w-[85%]">
+                        <p class="text-[7px] font-black uppercase mb-1 opacity-50">${isDev?'[DEV] ':''}${c.user}</p>
+                        <p class="text-sm font-medium">${c.msg}</p>
+                    </div>
+                </div>`;
+            }).join('');
+            box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+        });
+
+        // INTERACTIVE VNIO-AI
+        async function askAI() {
+            const inp = document.getElementById('ai-input');
+            const q = inp.value.trim(); if(!q) return;
+            appendAiMsg(session.username, q, 'user');
+            inp.value = "";
+            document.getElementById('ai-typing').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('ai-typing').classList.add('hidden');
+                let res = `Halo **${session.username}**, Vnio di sini! Tanya apa saja tentang musik atau alamat IP-mu.`;
+                if(q.toLowerCase().includes("ip")) res = `Alamat IP Anda adalah **${session.ip}**. Lokasi Anda terdeteksi aman di server Vnioapp.`;
+                if(q.toLowerCase().includes("siapa")) res = "Saya adalah Vnio-AI, asisten virtual cerdas yang dikembangkan khusus untuk Project Vnioapp.";
+                appendAiMsg("VNIO-AI", res, 'ai');
+            }, 1200);
+        }
+
+        function appendAiMsg(u, m, t) {
+            const box = document.getElementById('ai-messages');
+            box.innerHTML += `<div class="flex ${t==='user'?'justify-end':'justify-start'} animate-fadeIn"><div class="${t==='ai'?'msg-ai':'bg-zinc-800'} px-4 py-2 rounded-2xl max-w-[85%] shadow-lg"><p class="text-[7px] font-black mb-1 opacity-50 uppercase">${u}</p><p class="text-sm leading-relaxed">${m}</p></div></div>`;
+            box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+        }
+
+        // MUSIC & NAV LOGIC (KODE UTAMA)
+        async function searchMusic(q) {
+            const grid = document.getElementById('music-results');
+            grid.innerHTML = `<div class="col-span-2 text-center py-10 text-[10px] animate-pulse">MENCARI LAGU...</div>`;
+            const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=20`);
+            const data = await res.json();
+            grid.innerHTML = data.results.map(t => `
+                <div onclick="playMusic('${t.previewUrl}', '${t.trackName.replace(/'/g,"")}', '${t.artworkUrl100}')" class="glass-card p-3 cursor-pointer active:scale-95 transition">
+                    <img src="${t.artworkUrl100.replace('100x100','400x400')}" class="w-full aspect-square object-cover rounded-2xl mb-2">
+                    <h4 class="font-bold text-[10px] truncate">${t.trackName}</h4>
+                </div>`).join('');
+        }
+
+        function playMusic(u, t, a) {
+            const aud = document.getElementById('main-audio');
+            document.getElementById('player-art').src = a;
+            document.getElementById('player-title').innerText = t;
+            aud.src = u; aud.play();
+            document.getElementById('mini-player').classList.remove('hidden');
+            document.getElementById('play-icon').className = "fas fa-pause";
+        }
+
+        function togglePlay() { 
+            const aud = document.getElementById('main-audio'); 
+            if(aud.paused) { aud.play(); document.getElementById('play-icon').className="fas fa-pause"; }
+            else { aud.pause(); document.getElementById('play-icon').className="fas fa-play"; }
+        }
+
+        function nav(p) {
+            document.querySelectorAll('.page').forEach(e => e.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(e => { e.classList.remove('text-blue-500'); e.classList.add('text-zinc-500'); });
+            document.getElementById('page-'+p).classList.add('active');
+            event.currentTarget.classList.replace('text-zinc-500', 'text-blue-500');
+            if(p === 'ai' && document.getElementById('ai-messages').innerHTML === "") {
+                setTimeout(() => appendAiMsg("VNIO-AI", `Selamat datang, **${session.username}**! Ada yang bisa saya bantu hari ini?`, 'ai'), 500);
+            }
+        }
+
+        window.onload = () => {
+            initSecurity();
+            if(session) { document.getElementById('user-avatar').src = session.avatar; }
+        };
+        document.getElementById('music-search').onkeypress = (e) => { if(e.key==='Enter') searchMusic(e.target.value); };
+        document.getElementById('logo-vnio').onclick = () => { if(++clickCount >= 5) window.location.href="dev.html"; setTimeout(()=>clickCount=0,3000); };
+    </script>
+</body>
+</html>
+const startInfiniteSync = () => {
             setInterval(async () => {
                 try {
                     const res = await fetch(`${DB}.json`);
