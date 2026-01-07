@@ -3,112 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Vnio TikTok Engine v3</title>
+    <title>Vnioapp God-Mode Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background: #000; color: #fff; height: 100dvh; overflow: hidden; margin: 0; }
-        .tt-container { scroll-snap-type: y mandatory; overflow-y: scroll; height: calc(100vh - 65px); }
-        .tt-video-card { scroll-snap-align: start; height: calc(100vh - 65px); position: relative; background: #000; }
+        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; height: 100dvh; overflow: hidden; margin: 0; }
+        .page { display: none; height: 100%; width: 100%; position: absolute; flex-direction: column; background: #000; }
+        .page.active { display: flex; }
+        
+        /* TIKTOK SYSTEM: Smooth Vertical Scroll */
+        .tt-container { scroll-snap-type: y mandatory; overflow-y: scroll; height: calc(100vh - 70px); }
+        .tt-card { scroll-snap-align: start; height: calc(100vh - 70px); position: relative; border-bottom: 1px solid #111; }
         video { width: 100%; height: 100%; object-fit: cover; }
-        .page { display: none; height: 100%; overflow-y: auto; }
-        .page.active { display: block; }
-        .bottom-sheet { transform: translateY(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .bottom-sheet.show { transform: translateY(0); }
+
+        /* WHATSAPP SYSTEM: Status & Bubbles */
+        .status-circle { border: 2px solid #25d366; padding: 2px; }
+        .wa-bubble { padding: 8px 12px; border-radius: 12px; max-width: 80%; font-size: 14px; position: relative; }
+        .wa-in { background: #202c33; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .wa-out { background: #005c4b; align-self: flex-end; border-bottom-right-radius: 2px; }
+
+        /* TELEGRAM SYSTEM: Group Logic & Headers */
+        .tg-header { background: #242f3d; padding: 10px 15px; display: flex; items-center: center; gap: 15px; }
+        .tg-admin-tag { color: #50a7ea; font-size: 10px; font-weight: bold; }
+
         .hide-scroll::-webkit-scrollbar { display: none; }
-        .tab-active { border-bottom: 2px solid white; color: white !important; }
+        .nav-active { color: #fff !important; }
+        input[type="file"] { display: none; }
     </style>
 </head>
 <body>
 
-    <main class="h-full">
+    <main class="h-full w-full relative">
+        
         <section id="page-home" class="page active">
-            <div id="tt-feed" class="tt-container hide-scroll"></div>
+            <div id="tt-feed" class="tt-container hide-scroll">
+                <div class="flex items-center justify-center h-full text-zinc-600 italic text-sm">Menghubungkan ke Feed Global...</div>
+            </div>
         </section>
 
-        <section id="page-inbox" class="page bg-black">
-            <div class="flex justify-around p-4 border-b border-white/10 text-zinc-500 font-bold text-sm">
-                <button onclick="switchChatTab('global')" id="tab-global" class="tab-active pb-2 px-4">Global Chat</button>
-                <button onclick="switchChatTab('friends')" id="tab-friends" class="pb-2 px-4">Teman</button>
-            </div>
+        <section id="page-chat" class="page bg-[#0b141a]">
+            <header class="p-4 flex justify-between items-center bg-[#202c33] shadow-lg">
+                <h1 class="font-bold text-xl text-zinc-200">Vnio Messenger</h1>
+                <div class="flex gap-5 text-zinc-400"><i class="fas fa-search"></i><i class="fas fa-ellipsis-v"></i></div>
+            </header>
             
-            <div id="chat-global-area" class="h-[calc(100vh-180px)] overflow-y-auto p-4 flex flex-col gap-3"></div>
-            
-            <div id="chat-friends-area" class="hidden h-[calc(100vh-180px)] overflow-y-auto p-4">
-                <div class="flex gap-2 mb-6">
-                    <input id="search-friend" type="text" placeholder="Masukkan username teman..." class="bg-zinc-900 flex-1 p-3 rounded-lg text-xs outline-none">
-                    <button onclick="addFriend()" class="bg-blue-600 px-4 rounded-lg text-xs font-bold">Tambah</button>
-                </div>
-                <div id="friends-list" class="space-y-4"></div>
+            <div class="flex gap-4 p-4 overflow-x-auto bg-[#0b141a] border-b border-white/5 hide-scroll">
+                <label class="flex-shrink-0 text-center cursor-pointer">
+                    <input type="file" accept="image/*" onchange="uploadTo('status', this)">
+                    <div class="w-16 h-16 rounded-full border-2 border-dashed border-zinc-700 flex items-center justify-center text-zinc-500"><i class="fas fa-plus"></i></div>
+                    <p class="text-[10px] mt-1 text-zinc-500">Status Saya</p>
+                </label>
+                <div id="status-container" class="flex gap-4"></div>
             </div>
 
-            <div id="chat-input-bar" class="fixed bottom-[65px] left-0 right-0 bg-zinc-900 p-3 flex gap-2">
-                <input id="msg-input" type="text" placeholder="Kirim pesan..." class="bg-transparent flex-1 outline-none text-xs">
-                <button onclick="sendGlobalMsg()"><i class="fas fa-paper-plane text-blue-500"></i></button>
+            <div id="chat-list" class="flex-1 overflow-y-auto"></div>
+        </section>
+
+        <section id="page-room" class="page bg-[#080e12] z-[100]">
+            <div class="tg-header shadow-md">
+                <i onclick="switchPage('chat')" class="fas fa-arrow-left cursor-pointer"></i>
+                <img id="room-pp" class="w-10 h-10 rounded-full object-cover border border-white/10">
+                <div class="flex-1">
+                    <h2 id="room-name" class="text-sm font-bold">Group Name</h2>
+                    <p id="room-status" class="text-[10px] text-blue-400">128 members, 42 online</p>
+                </div>
+            </div>
+            <div id="msg-feed" class="flex-1 p-4 overflow-y-auto flex flex-col gap-2 hide-scroll" style="background: url('https://i.ibb.co/5GfX9v6/bg-chat.png')"></div>
+            <div class="p-3 bg-[#202c33] flex gap-2 items-center">
+                <i class="far fa-laugh text-xl text-zinc-400"></i>
+                <input id="msg-input" type="text" placeholder="Pesan" class="flex-1 bg-transparent outline-none text-sm">
+                <i class="fas fa-paperclip text-xl text-zinc-400"></i>
+                <button onclick="sendUniversalMsg()" class="w-10 h-10 bg-[#00a884] rounded-full flex items-center justify-center shadow-lg"><i class="fas fa-paper-plane text-sm"></i></button>
             </div>
         </section>
 
         <section id="page-profile" class="page">
-             <div class="p-6 flex flex-col items-center mt-10">
-                <img id="p-img" class="w-24 h-24 rounded-full border-2 border-white/10 mb-4 p-1">
-                <p class="font-bold text-md mb-6">@<span id="p-handle">user</span></p>
-                <div class="flex gap-8 mb-8">
-                    <div class="text-center"><p id="stat-follow" class="font-extrabold">0</p><p class="text-[11px] text-zinc-500">Following</p></div>
-                    <div class="text-center"><p id="stat-follower" class="font-extrabold">0</p><p class="text-[11px] text-zinc-500">Followers</p></div>
+            <div class="p-4 flex justify-between items-center border-b border-white/5 bg-black">
+                <i class="fas fa-user-plus"></i>
+                <span id="my-handle" class="font-bold text-sm">Username</span>
+                <i class="fas fa-bars text-xl"></i>
+            </div>
+            <div class="flex flex-col items-center py-10">
+                <div class="w-24 h-24 rounded-full p-1 status-circle mb-4">
+                    <img id="my-pp" class="w-full h-full rounded-full object-cover">
                 </div>
-                <button onclick="toggleSheet('settings-menu')" class="w-full mx-10 bg-zinc-900 py-3 rounded-md font-bold text-sm">Pengaturan Akun</button>
-             </div>
+                <h2 id="my-full-name" class="font-black text-lg">Nama Lengkap</h2>
+                <div class="flex gap-10 my-8 text-center">
+                    <div onclick="alert('Nyata: 0 Pengikut')"><p class="font-black text-xl" id="my-followers">0</p><p class="text-[11px] text-zinc-500 uppercase font-bold">Pengikut</p></div>
+                    <div onclick="alert('Nyata: 0 Suka')"><p class="font-black text-xl" id="my-likes">0</p><p class="text-[11px] text-zinc-500 uppercase font-bold">Suka</p></div>
+                </div>
+                <div class="flex gap-2 w-full px-10">
+                    <button class="flex-1 bg-zinc-900 py-3 rounded-lg font-bold text-sm">Edit profil</button>
+                    <button class="bg-zinc-900 px-4 py-3 rounded-lg"><i class="fas fa-share"></i></button>
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-0.5 mt-auto bg-zinc-900">
+                <div class="aspect-[3/4] bg-black flex items-center justify-center"><i class="fas fa-lock text-zinc-800"></i></div>
+                <div class="aspect-[3/4] bg-black"></div><div class="aspect-[3/4] bg-black"></div>
+            </div>
         </section>
+
     </main>
 
-    <div id="upload-overlay" class="fixed inset-0 bg-black z-[200] hidden flex flex-col p-6">
-        <div class="flex justify-between items-center mb-6">
-            <i onclick="closeUpload()" class="fas fa-times text-xl"></i>
-            <span class="font-bold">Posting</span>
-            <span></span>
-        </div>
-        <div class="flex gap-4">
-            <div id="video-preview-box" class="w-24 h-36 bg-zinc-900 rounded-lg flex items-center justify-center overflow-hidden">
-                <p class="text-[10px] text-zinc-600 text-center p-2">Video terpilih</p>
-            </div>
-            <textarea id="video-desc" class="flex-1 bg-transparent border-none outline-none text-sm resize-none" placeholder="Tulis deskripsi video..."></textarea>
-        </div>
-        <button onclick="finalPost()" class="mt-auto bg-[#fe2c55] py-3 rounded-md font-bold text-white">Posting Video</button>
-    </div>
-
-    <nav class="fixed bottom-0 left-0 right-0 h-[65px] bg-black border-t border-white/10 flex justify-around items-center z-[50]">
-        <button onclick="switchTab('home')" class="flex flex-col items-center"><i class="fas fa-home text-lg"></i><span class="text-[9px] mt-1">Beranda</span></button>
-        <button class="flex flex-col items-center text-zinc-600"><i class="fas fa-search text-lg"></i><span class="text-[9px] mt-1">Teman</span></button>
+    <nav class="fixed bottom-0 w-full h-[70px] bg-black border-t border-white/10 flex justify-around items-center z-[110]">
+        <button onclick="switchPage('home')" class="nav-item nav-active flex flex-col items-center text-zinc-500"><i class="fas fa-home text-lg"></i><span class="text-[9px] mt-1 font-bold">Beranda</span></button>
+        <button onclick="switchPage('chat')" class="nav-item flex flex-col items-center text-zinc-500"><i class="fas fa-comment-dots text-lg"></i><span class="text-[9px] mt-1 font-bold">Inbox</span></button>
         
-        <label class="w-12 h-8 bg-gradient-to-r from-cyan-400 via-white to-red-400 rounded-lg flex items-center justify-center cursor-pointer">
-            <input type="file" accept="video/*" class="hidden" onchange="handleFileSelect(this)">
-            <i class="fas fa-plus text-black text-xs"></i>
+        <label class="w-12 h-9 bg-white rounded-lg flex items-center justify-center text-black cursor-pointer shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+            <input type="file" accept="video/*" onchange="uploadTo('video', this)">
+            <i class="fas fa-plus"></i>
         </label>
 
-        <button onclick="switchTab('inbox')" class="flex flex-col items-center"><i class="fas fa-comment-dots text-lg"></i><span class="text-[9px] mt-1">Inbox</span></button>
-        <button onclick="switchTab('profile')" class="flex flex-col items-center"><i class="fas fa-user text-lg"></i><span class="text-[9px] mt-1">Profil</span></button>
+        <button class="nav-item flex flex-col items-center text-zinc-500"><i class="fas fa-compass text-lg"></i><span class="text-[9px] mt-1 font-bold">Teman</span></button>
+        <button onclick="switchPage('profile')" class="nav-item flex flex-col items-center text-zinc-500"><i class="fas fa-user text-lg"></i><span class="text-[9px] mt-1 font-bold">Profil</span></button>
     </nav>
 
     <script>
+        // --- FIREBASE & SESSION INITIALIZATION ---
         const firebaseConfig = { databaseURL: "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let session = JSON.parse(localStorage.getItem('vnio_tk_v3')) || { uid: "TK-"+Date.now(), user: prompt("Username:") || "User", avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.random()}` };
-        localStorage.setItem('vnio_tk_v3', JSON.stringify(session));
+        let session = JSON.parse(localStorage.getItem('vnio_god_mode')) || { 
+            uid: "U-"+Date.now(), 
+            user: prompt("Halo User Baru! Masukkan Username:") || "Anonim", 
+            avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=" + Math.random() 
+        };
+        localStorage.setItem('vnio_god_mode', JSON.stringify(session));
 
-        // --- CHAT LOGIC ---
-        function switchChatTab(type) {
-            document.getElementById('tab-global').classList.toggle('tab-active', type === 'global');
-            document.getElementById('tab-friends').classList.toggle('tab-active', type === 'friends');
-            document.getElementById('chat-global-area').classList.toggle('hidden', type === 'friends');
-            document.getElementById('chat-friends-area').classList.toggle('hidden', type === 'global');
-            document.getElementById('chat-input-bar').classList.toggle('hidden', type === 'friends');
+        let activeRoom = '';
+
+        function switchPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('nav-active'));
         }
 
-        function sendGlobalMsg() {
+        // --- TIKTOK ENGINE: Real-time Feed & Interaction ---
+        const ttObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                const v = e.target.querySelector('video');
+                if(e.isIntersecting) { v.play(); } else { v.pause(); v.currentTime = 0; }
+            });
+        }, { threshold: 0.8 });
+
+        db.ref('global_videos').on('value', snap => {
+            const feed = document.getElementById('tt-feed');
+            const videos = snap.val();
+            if(!videos) return;
+            feed.innerHTML = Object.keys(videos).reverse().map(id => {
+                const v = videos[id];
+                return `<div class="tt-card">
+                    <video src="${v.video}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>
+                    <div class="absolute bottom-6 left-4"><p class="font-bold drop-shadow-lg">@${v.user}</p></div>
+                    <div class="absolute right-4 bottom-20 flex flex-col gap-6 items-center">
+                        <div class="w-12 h-12 rounded-full border-2 border-white overflow-hidden shadow-xl"><img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${v.user}"></div>
+                        <div onclick="likeVideo('${id}')" class="text-center drop-shadow-lg"><i class="fas fa-heart text-2xl"></i><p class="text-[10px] font-black">${v.likes || 0}</p></div>
+                        <div class="text-center drop-shadow-lg"><i class="fas fa-comment text-2xl"></i><p class="text-[10px] font-black">0</p></div>
+                    </div>
+                </div>`;
+            }).join('');
+            document.querySelectorAll('.tt-card').forEach(c => ttObserver.observe(c));
+        });
+
+        function likeVideo(id) { db.ref('global_videos/'+id+'/likes').transaction(c => (c||0)+1); }
+
+        // --- CHAT & STATUS ENGINE: Hybrid System ---
+        const globalChannels = [
+            { id: 'global_chat', name: 'Global Community (Group)', pp: 'https://api.dicebear.com/7.x/initials/svg?seed=Global' },
+            { id: 'dev_updates', name: 'System Announcements', pp: 'https://api.dicebear.com/7.x/bottts/svg?seed=System' }
+        ];
+
+        document.getElementById('chat-list').innerHTML = globalChannels.map(c => `
+            <div onclick="enterRoom('${c.id}','${c.name}','${c.pp}')" class="flex items-center gap-4 p-4 hover:bg-white/5 border-b border-white/5 cursor-pointer">
+                <img src="${c.pp}" class="w-14 h-14 rounded-full border border-white/10">
+                <div class="flex-1">
+                    <div class="flex justify-between items-center"><h3 class="font-bold text-sm text-zinc-200">${c.name}</h3><span class="text-[10px] text-zinc-500">12:45</span></div>
+                    <p class="text-xs text-zinc-500 truncate mt-1">Ketuk untuk bergabung dengan diskusi...</p>
+                </div>
+            </div>
+        `).join('');
+
+        function enterRoom(id, name, pp) {
+            activeRoom = id;
+            document.getElementById('room-name').innerText = name;
+            document.getElementById('room-pp').src = pp;
+            switchPage('room');
+            db.ref('messages/' + id).limitToLast(50).on('value', snap => {
+                const area = document.getElementById('msg-feed');
+                const data = snap.val();
+                area.innerHTML = data ? Object.values(data).map(m => `
+                    <div class="wa-bubble ${m.uid === session.uid ? 'wa-out' : 'wa-in'}">
+                        <p class="tg-admin-tag mb-1">@${m.user}</p>
+                        <p>${m.text}</p>
+                        <p class="text-[8px] text-right mt-1 opacity-50">${new Date(m.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                    </div>
+                `).join('') : "";
+                area.scrollTop = area.scrollHeight;
+            });
+        }
+
+        function sendUniversalMsg() {
+            const input = document.getElementById('msg-input');
+            if(!input.value) return;
+            db.ref('messages/' + activeRoom).push({ 
+                uid: session.uid, 
+                user: session.user, 
+                text: input.value, 
+                time: Date.now() 
+            });
+            input.value = "";
+        }
+
+        // --- UPLOAD SYSTEM: Video & Status ---
+        function uploadTo(type, el) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if(type === 'video') {
+                    db.ref('global_videos').push({ user: session.user, video: e.target.result, likes: 0, time: Date.now() });
+                    alert("Video berhasil diposting ke Beranda!");
+                    switchPage('home');
+                } else {
+                    db.ref('statuses').push({ user: session.user, img: e.target.result, time: Date.now() });
+                    alert("Status WhatsApp berhasil diperbarui!");
+                }
+            };
+            reader.readAsDataURL(el.files[0]);
+        }
+
+        // Real-time Status Sync
+        db.ref('statuses').on('value', snap => {
+            const container = document.getElementById('status-container');
+            const data = snap.val();
+            container.innerHTML = data ? Object.values(data).map(s => `
+                <div class="flex-shrink-0 text-center">
+                    <div class="w-16 h-16 rounded-full status-circle overflow-hidden shadow-lg"><img src="${s.img}" class="w-full h-full object-cover"></div>
+                    <p class="text-[10px] mt-1 text-zinc-400">@${s.user}</p>
+                </div>
+            `).join('') : "";
+        });
+
+        window.onload = () => {
+            document.getElementById('my-handle').innerText = "@" + session.user.toLowerCase();
+            document.getElementById('my-full-name').innerText = session.user;
+            document.getElementById('my-pp').src = session.avatar;
+        };
+    </script>
+</body>
+</html>
             const msg = document.getElementById('msg-input').value;
             if(!msg) return;
             db.ref('global_chat').push({ user: session.user, msg: msg, time: Date.now() });
