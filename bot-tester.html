@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Vnio-Bot System Tester (Multi-Bot)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+        body { font-family: 'Space Mono', monospace; background: #050505; color: #00ff00; }
+        .terminal-box { background: rgba(0, 255, 0, 0.02); border: 1px solid rgba(0, 255, 0, 0.2); }
+        .log-entry { border-left: 2px solid #00ff00; padding-left: 10px; margin-bottom: 5px; font-size: 10px; }
+        .status-online { color: #00ff00; animation: blink 1.5s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #004400; border-radius: 10px; }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-5xl mx-auto">
+        <header class="mb-8 border-b border-green-900 pb-4 flex justify-between items-end">
+            <div>
+                <h1 class="text-xl font-bold uppercase tracking-[0.2em]">Vnio-Bot <span class="bg-green-900 text-black px-2">Multi-Agent</span></h1>
+                <p class="text-[10px] text-green-700 mt-1">10 Automated Testers for Vnioapp v12.0</p>
+            </div>
+            <div id="bot-status" class="text-[10px] font-bold text-red-600 uppercase">System Offline</div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="terminal-box p-5 rounded-lg h-fit">
+                <h2 class="text-xs font-bold mb-4 border-b border-green-900 pb-2 uppercase text-blue-400">Settings</h2>
+                
+                <label class="text-[9px] block mb-1 uppercase text-zinc-500">Target Group</label>
+                <input id="target-room" type="text" value="global" class="w-full bg-black border border-green-900 p-2 text-xs mb-4 outline-none">
+
+                <label class="text-[9px] block mb-1 uppercase text-zinc-500">Load Profile</label>
+                <select id="bot-speed" class="w-full bg-black border border-green-900 p-2 text-xs mb-6 outline-none">
+                    <option value="10000">Eco Mode (10s/msg)</option>
+                    <option value="5000" selected>Balanced (5s/msg)</option>
+                    <option value="2000">Stress Test (2s/msg)</option>
+                </select>
+
+                <button onclick="toggleSystem()" id="btn-master" class="w-full bg-green-600 text-black font-black py-4 text-xs uppercase hover:bg-green-400 transition">Start 10 Bots</button>
+            </div>
+
+            <div class="md:col-span-3 terminal-box p-5 rounded-lg flex flex-col h-[600px]">
+                <h2 class="text-xs font-bold uppercase tracking-widest mb-4 border-b border-green-900 pb-2">Traffic Monitor</h2>
+                <div id="bot-logs" class="flex-1 overflow-y-auto pr-2">
+                    <div class="log-entry text-green-800">System Ready. Awaiting Initialization...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeGnAjNVmoB-uYGWadpFkEyxlPpuTmz2o",
+            authDomain: "ceziroom.firebaseapp.com",
+            databaseURL: "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ceziroom",
+            storageBucket: "ceziroom.firebasestorage.app",
+            messagingSenderId: "771662623358",
+            appId: "1:771662623358:web:de5b7635f3ff27f19fde2f"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let isRunning = false;
+        let botIntervals = [];
+        const messages = [
+            "VNIO-BOT System Check: OK.", "Fitur v12.0 berjalan lancar.", "Testing real-time latency...",
+            "Grup chat terdeteksi stabil.", "Menyapa user Vnioapp!", "Cek status server...",
+            "Vnio-AI memberikan respon cepat.", "Database tidak terbebani.", "Sistem invite link terverifikasi.",
+            "Musik player sinkronisasi: Berhasil."
+        ];
+
+        function addLog(msg, color = "text-green-500") {
+            const logBox = document.getElementById('bot-logs');
+            logBox.innerHTML += `<div class="log-entry ${color}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function toggleSystem() {
+            if (!isRunning) {
+                startSystem();
+            } else {
+                stopSystem();
+            }
+        }
+
+        function startSystem() {
+            isRunning = true;
+            const room = document.getElementById('target-room').value;
+            const speed = parseInt(document.getElementById('bot-speed').value);
+            
+            document.getElementById('btn-master').innerText = "Terminate All Bots";
+            document.getElementById('btn-master').className = "w-full bg-red-600 text-white font-black py-4 text-xs uppercase";
+            document.getElementById('bot-status').innerText = "10 Bots Online";
+            document.getElementById('bot-status').className = "text-[10px] font-bold text-green-500 uppercase status-online";
+
+            addLog("INITIALIZING 10 AGENTS...", "text-blue-400 font-bold");
+
+            // MEMBUAT 10 BOT DENGAN STAGGERED DELAY (Agar tidak membebani sistem)
+            for (let i = 1; i <= 10; i++) {
+                const botName = `VNIO-BOT${i}`;
+                
+                // Tiap bot diberi jeda start yang berbeda-beda
+                setTimeout(() => {
+                    if(!isRunning) return;
+                    addLog(`${botName} has entered the room.`, "text-zinc-400 text-[9px]");
+                    
+                    const interval = setInterval(() => {
+                        const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+                        
+                        db.ref('chats/' + room).push({
+                            user: botName,
+                            msg: randomMsg,
+                            role: 'bot',
+                            time: firebase.database.ServerValue.TIMESTAMP
+                        }).then(() => {
+                            addLog(`${botName}: ${randomMsg}`);
+                        });
+                    }, speed);
+                    
+                    botIntervals.push(interval);
+                }, i * 1000); // Tiap bot masuk selisih 1 detik
+            }
+        }
+
+        function stopSystem() {
+            isRunning = false;
+            botIntervals.forEach(clearInterval);
+            botIntervals = [];
+            
+            document.getElementById('btn-master').innerText = "Start 10 Bots";
+            document.getElementById('btn-master').className = "w-full bg-green-600 text-black font-black py-4 text-xs uppercase";
+            document.getElementById('bot-status').innerText = "System Offline";
+            document.getElementById('bot-status').className = "text-[10px] font-bold text-red-600 uppercase";
+            
+            addLog("ALL BOTS TERMINATED.", "text-red-500 font-bold");
+        }
+    </script>
+</body>
+</html>
