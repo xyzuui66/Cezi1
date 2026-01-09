@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNIO-DEV ULTIMATE v12.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #050505; color: #fff; margin: 0; padding: 20px; }
+        .glass { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .online { background: #10b981; box-shadow: 0 0 10px #10b981; }
+        .offline { background: #ef4444; }
+        input, textarea { background: #121212 !important; border: 1px solid #333 !important; color: white !important; }
+    </style>
+</head>
+<body>
+
+    <div class="max-w-6xl mx-auto">
+        <div class="glass p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-black italic">VNIO<span class="text-blue-500">CONTROL</span></h1>
+                <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Master Dashboard v12.0</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="toggleServer()" id="server-btn" class="px-6 py-3 rounded-2xl font-black text-[10px] uppercase transition-all">
+                    Checking Server...
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-1 space-y-6">
+                <div class="glass p-6">
+                    <h3 class="text-xs font-black uppercase mb-4 text-blue-500 italic"><i class="fas fa-bullhorn mr-2"></i>Kirim Pengumuman</h3>
+                    <textarea id="ann-text" placeholder="Tulis pengumuman untuk semua user..." class="w-full h-32 p-4 rounded-2xl text-xs outline-none resize-none mb-3"></textarea>
+                    <button onclick="sendAnnounce()" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-bold text-xs uppercase">Broadcast Sekarang</button>
+                    <button onclick="clearAnnounce()" class="w-full mt-2 text-zinc-500 text-[9px] font-bold uppercase">Hapus Pengumuman</button>
+                </div>
+                
+                <div class="glass p-6">
+                    <h3 class="text-xs font-black uppercase mb-2 text-zinc-400">Statistik Cepat</h3>
+                    <div class="flex justify-between border-b border-white/5 py-2">
+                        <span class="text-[10px] text-zinc-500">Total User</span>
+                        <span id="stat-total" class="text-xs font-bold">0</span>
+                    </div>
+                    <div class="flex justify-between py-2">
+                        <span class="text-[10px] text-zinc-500">Online Sekarang</span>
+                        <span id="stat-online" class="text-xs font-bold text-green-500">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-2">
+                <div class="glass overflow-hidden">
+                    <div class="p-5 border-b border-white/5 bg-white/5 flex justify-between items-center">
+                        <h3 class="text-xs font-black uppercase italic">Daftar Pengguna & IP Asli</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="text-[9px] text-zinc-500 uppercase font-black border-b border-white/5">
+                                <tr>
+                                    <th class="p-4">User</th>
+                                    <th class="p-4">WhatsApp & IP</th>
+                                    <th class="p-4">Status</th>
+                                    <th class="p-4 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-list" class="text-xs">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeGnAjNVmoB-uYGWadpFkEyxlPpuTmz2o",
+            authDomain: "ceziroom.firebaseapp.com",
+            databaseURL: "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ceziroom",
+            storageBucket: "ceziroom.firebasestorage.app",
+            messagingSenderId: "771662623358",
+            appId: "1:771662623358:web:de5b7635f3ff27f19fde2f"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 1. FITUR BUKA TUTUP SERVER
+        db.ref('server_status').on('value', snap => {
+            const btn = document.getElementById('server-btn');
+            if(snap.val() === 'maintenance') {
+                btn.innerText = "SERVER TUTUP (OFFLINE)";
+                btn.className = "bg-red-600 px-6 py-3 rounded-2xl font-black text-[10px] uppercase";
+            } else {
+                btn.innerText = "SERVER BUKA (ONLINE)";
+                btn.className = "bg-green-600 px-6 py-3 rounded-2xl font-black text-[10px] uppercase";
+            }
+        });
+
+        function toggleServer() {
+            db.ref('server_status').once('value', snap => {
+                db.ref('server_status').set(snap.val() === 'maintenance' ? 'online' : 'maintenance');
+            });
+        }
+
+        // 2. FITUR KIRIM PENGUMUMAN
+        function sendAnnounce() {
+            const msg = document.getElementById('ann-text').value;
+            if(!msg) return alert("Isi pesan dulu!");
+            db.ref('broadcast').set({ message: msg, time: Date.now() });
+            alert("Pengumuman Terkirim!");
+        }
+
+        function clearAnnounce() {
+            db.ref('broadcast').remove();
+            alert("Pengumuman Dihapus!");
+        }
+
+        // 3. MONITOR USER (NO HP, IP, STATUS ONLINE)
+        db.ref('users').on('value', snap => {
+            const users = snap.val();
+            const list = document.getElementById('user-list');
+            let html = '';
+            let total = 0;
+            let onlineCount = 0;
+
+            for(let id in users) {
+                const u = users[id];
+                total++;
+                
+                // Cek status online (jika heartbeat terakhir < 30 detik)
+                const isOnline = (Date.now() - (u.last_seen || 0)) < 30000;
+                if(isOnline) onlineCount++;
+
+                html += `
+                <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                    <td class="p-4">
+                        <div class="flex items-center gap-3">
+                            <img src="${u.avatar}" class="w-8 h-8 rounded-full bg-zinc-800">
+                            <div>
+                                <p class="font-bold">${u.username}</p>
+                                <p class="text-[8px] text-blue-500 font-mono select-all cursor-pointer">${u.vnio_key}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-4">
+                        <p class="font-bold">${u.phone}</p>
+                        <p class="text-[9px] text-zinc-500 font-mono italic">${u.ip}</p>
+                    </td>
+                    <td class="p-4 uppercase font-black text-[9px]">
+                        <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span>
+                        <span class="${isOnline ? 'text-green-500' : 'text-zinc-600'}">${isOnline ? 'Online' : 'Offline'}</span>
+                    </td>
+                    <td class="p-4 text-center">
+                        <button onclick="banUser('${u.phone}', '${u.status}')" class="text-red-500 text-[10px] hover:underline">
+                            ${u.status === 'active' ? 'BAN' : 'UNBAN'}
+                        </button>
+                    </td>
+                </tr>
+                `;
+            }
+            list.innerHTML = html;
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-online').innerText = onlineCount;
+        });
+
+        function banUser(phone, status) {
+            const next = status === 'active' ? 'banned' : 'active';
+            db.ref('users/'+phone).update({ status: next });
+        }
+    </script>
+</body>
+</html>
