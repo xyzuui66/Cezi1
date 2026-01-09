@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VNIO-DEV | Absolute Command v12.7</title>
+    <title>VNIO-DEV | Master Control v13.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -12,86 +12,91 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #050505; color: #fff; margin: 0; padding: 20px; }
         .glass { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; }
-        .online-glow { color: #10b981; text-shadow: 0 0 10px #10b981; }
-        input, textarea { background: #121212 !important; border: 1px solid #333 !important; color: white !important; outline: none; }
-        input:focus, textarea:focus { border-color: #3b82f6 !important; }
-        
+        .online { color: #10b981; text-shadow: 0 0 10px #10b981; }
         #toast { 
             position: fixed; top: 24px; left: 50%; transform: translateX(-50%); 
-            background: rgba(59, 130, 246, 0.95); backdrop-filter: blur(10px);
-            padding: 14px 28px; border-radius: 16px; font-weight: 800; font-size: 11px;
-            display: none; z-index: 9999; animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 1px solid rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 1px;
+            background: #3b82f6; padding: 14px 28px; border-radius: 16px; font-weight: 800; font-size: 11px;
+            display: none; z-index: 9999; border: 1px solid rgba(255,255,255,0.2); text-transform: uppercase;
         }
-        @keyframes slideDown { from { transform: translate(-50%, -100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4">
 
-    <div id="toast">SYSTEM INITIALIZED</div>
+    <div id="toast">ACTION SUCCESSFUL</div>
 
     <div class="max-w-7xl mx-auto">
-        <header class="glass p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <header class="glass p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-3xl font-black italic tracking-tighter">VNIO<span class="text-blue-500">MASTER</span></h1>
-                <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Permanent Data Controller v12.7</p>
+                <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Central Account & Security Manager</p>
             </div>
             <div class="flex gap-3">
-                <button onclick="toggleServer()" id="server-btn" class="px-6 py-3 rounded-2xl font-black text-[10px] uppercase transition-all shadow-xl">Loading...</button>
+                <button onclick="toggleServer()" id="server-btn" class="px-6 py-3 rounded-2xl font-black text-[10px] uppercase transition-all">Loading...</button>
                 <button onclick="window.location.href='index.html'" class="bg-white text-black px-6 py-3 rounded-2xl font-black text-[10px] uppercase italic">Back to App</button>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
+        <div class="glass p-6 mb-8 border-l-4 border-blue-500">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="w-full md:w-1/2">
+                    <h3 class="text-xs font-black text-blue-500 uppercase mb-2 italic"><i class="fas fa-key mr-2"></i>Official Vnioapp Master API Key</h3>
+                    <p class="text-[9px] text-zinc-500 mb-4 font-bold uppercase italic">Gunakan Key ini untuk menghubungkan Security System di semua website Boss.</p>
+                    <div class="relative group">
+                        <input id="master-api-key" type="text" value="VNIO-MASTER-SYST-2026-PRO" readonly 
+                               class="w-full bg-black/40 border border-white/10 p-4 rounded-xl font-mono text-blue-400 outline-none focus:border-blue-500 transition-all">
+                        <button onclick="copyMasterKey()" class="absolute right-2 top-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-black text-[10px] uppercase transition-all active:scale-90">
+                            COPY MASTER KEY
+                        </button>
+                    </div>
+                </div>
+                <div class="hidden md:block w-px h-20 bg-white/5"></div>
+                <div class="flex-1 text-center md:text-left">
+                    <h3 class="text-xs font-black text-zinc-400 uppercase mb-2 italic">Account System Status</h3>
+                    <p class="text-[10px] text-zinc-500 leading-relaxed">Semua user yang terdaftar di bawah ini dapat login ke semua website Boss menggunakan <b>Username & Nomor HP</b> secara otomatis.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="space-y-6">
                 <div class="glass p-6">
-                    <h3 class="text-xs font-black uppercase mb-4 text-blue-500 italic flex items-center gap-2">
-                        <i class="fas fa-bullhorn"></i> Real-time Broadcast
-                    </h3>
-                    <textarea id="broadcast-msg" placeholder="Kirim pengumuman ke semua HP user..." class="w-full h-28 p-4 rounded-xl text-xs mb-3 resize-none"></textarea>
-                    <button onclick="sendBroadcast()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-bold text-[10px] uppercase shadow-lg shadow-blue-600/20 transition-all active:scale-95">🚀 Send Notification</button>
-                    <button onclick="clearBroadcast()" class="w-full mt-3 text-zinc-600 text-[9px] font-bold uppercase hover:text-red-500 transition-colors">Clear Active Broadcast</button>
+                    <h3 class="text-xs font-black uppercase mb-4 text-blue-500 italic">Send Broadcast</h3>
+                    <textarea id="broadcast-msg" placeholder="Pesan muncul di semua web user..." class="w-full h-24 bg-black/30 border border-white/10 rounded-xl p-4 text-xs mb-3 text-white outline-none resize-none"></textarea>
+                    <button onclick="sendBroadcast()" class="w-full bg-blue-600 py-4 rounded-xl font-bold text-[10px] uppercase shadow-lg shadow-blue-600/20 transition-all active:scale-95">🚀 Broadcast Now</button>
                 </div>
 
-                <div class="glass p-6 h-[400px] flex flex-col">
+                <div class="glass p-6 h-[350px] flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xs font-black uppercase italic text-zinc-400">Live Chat Monitor</h3>
-                        <button onclick="clearAllChats()" class="text-[8px] bg-red-600/10 text-red-500 px-2 py-1 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all">CLEAR ALL</button>
+                        <h3 class="text-xs font-black uppercase text-zinc-400 italic">Live Chat Monitor</h3>
+                        <button onclick="clearAllChats()" class="text-[8px] text-red-500 font-bold uppercase">Clear Chat</button>
                     </div>
-                    <div id="chat-monitor" class="flex-1 overflow-y-auto space-y-3">
-                        </div>
+                    <div id="chat-monitor" class="flex-1 overflow-y-auto space-y-3 pr-2"></div>
                 </div>
             </div>
 
             <div class="lg:col-span-2">
                 <div class="glass overflow-hidden border border-white/5">
                     <div class="p-6 bg-white/5 flex justify-between items-center border-b border-white/5">
-                        <div>
-                            <h3 class="text-sm font-black uppercase italic">User Database</h3>
-                            <p class="text-[9px] text-zinc-500 font-bold uppercase">Permanent Keys & Real-time IP Tracking</p>
-                        </div>
+                        <h3 class="text-sm font-black uppercase italic">Registered Accounts <span class="text-zinc-500 text-[9px] lowercase font-normal ml-2">(Satu akun untuk semua website)</span></h3>
                         <span id="user-count" class="text-[10px] bg-blue-600 text-white px-4 py-1.5 rounded-full font-black">0 USERS</span>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
                             <thead class="text-[9px] text-zinc-500 uppercase font-black bg-black/40">
                                 <tr>
-                                    <th class="p-5">User</th>
-                                    <th class="p-5">Phone & IP</th>
-                                    <th class="p-5">Secret Web Key (Permanen)</th>
+                                    <th class="p-5">Username</th>
+                                    <th class="p-5">Phone Number (ID)</th>
+                                    <th class="p-5">IP Address</th>
                                     <th class="p-5">Status</th>
                                     <th class="p-5 text-center">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="user-list-body" class="text-xs">
-                                </tbody>
+                            <tbody id="user-list-body" class="text-xs"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -109,6 +114,81 @@
         const db = firebase.database();
 
         function showToast(text) {
+            const t = document.getElementById('toast');
+            t.innerText = text; t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        function copyMasterKey() {
+            const key = document.getElementById('master-api-key').value;
+            navigator.clipboard.writeText(key).then(() => showToast("📋 MASTER API KEY DISALIN!"));
+        }
+
+        // BROADCAST
+        function sendBroadcast() {
+            const msg = document.getElementById('broadcast-msg').value;
+            if(!msg) return showToast("⚠️ Isi pesan!");
+            db.ref('broadcast').set({ message: msg, time: Date.now() }).then(() => {
+                showToast("🚀 Broadcast Terkirim!"); document.getElementById('broadcast-msg').value = "";
+            });
+        }
+
+        // USER MONITORING
+        db.ref('users').on('value', snap => {
+            const list = document.getElementById('user-list-body');
+            const data = snap.val(); if(!data) return;
+            let html = ''; let count = 0;
+            for(let id in data) {
+                const u = data[id]; count++;
+                const isOnline = (Date.now() - (u.last_seen || 0)) < 35000;
+                html += `
+                <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                    <td class="p-5 font-bold text-zinc-100">${u.username}</td>
+                    <td class="p-5 font-black text-blue-500">${u.phone}</td>
+                    <td class="p-5 text-zinc-500 font-mono text-[10px]">${u.ip || '0.0.0.0'}</td>
+                    <td class="p-5">
+                        <span class="text-[9px] font-black uppercase ${isOnline ? 'text-green-500' : 'text-zinc-700'}">${isOnline ? '● Online' : '○ Offline'}</span>
+                    </td>
+                    <td class="p-5 text-center">
+                        <button onclick="toggleBan('${u.phone}', '${u.status}')" class="text-[9px] font-black uppercase ${u.status === 'active' ? 'text-red-500' : 'text-green-500'}">
+                            ${u.status === 'active' ? 'BAN' : 'UNBAN'}
+                        </button>
+                    </td>
+                </tr>`;
+            }
+            list.innerHTML = html;
+            document.getElementById('user-count').innerText = count + " USERS";
+        });
+
+        // CHAT MONITOR & SERVER CONTROL
+        db.ref('global_chats').limitToLast(15).on('value', snap => {
+            const box = document.getElementById('chat-monitor');
+            const chats = snap.val(); if(!chats) return;
+            box.innerHTML = Object.values(chats).map(c => `<div class="bg-white/5 p-3 rounded-xl border border-white/5 text-[10px]"><span class="text-blue-500 font-bold">${c.user}:</span> <span class="text-zinc-300">${c.msg}</span></div>`).join('');
+            box.scrollTop = box.scrollHeight;
+        });
+
+        function clearAllChats() { if(confirm("Hapus semua chat?")) db.ref('global_chats').remove(); }
+
+        db.ref('server_status').on('value', snap => {
+            const btn = document.getElementById('server-btn');
+            const isMt = snap.val() === 'maintenance';
+            btn.innerText = isMt ? "SERVER: CLOSED" : "SERVER: ONLINE";
+            btn.className = isMt ? "bg-red-600 px-6 py-3 rounded-2xl font-black text-[10px]" : "bg-green-600 px-6 py-3 rounded-2xl font-black text-[10px]";
+        });
+
+        function toggleServer() {
+            db.ref('server_status').once('value', snap => {
+                db.ref('server_status').set(snap.val() === 'maintenance' ? 'online' : 'maintenance');
+            });
+        }
+
+        function toggleBan(p, s) {
+            db.ref('users/'+p).update({ status: s === 'active' ? 'banned' : 'active' });
+        }
+    </script>
+</body>
+</html>
             const t = document.getElementById('toast');
             t.innerText = text;
             t.style.display = 'block';
