@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNIO-SHIELD | Cyber Security System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        body { font-family: 'JetBrains Mono', monospace; background: #000; color: #00ff41; margin: 0; overflow: hidden; }
+        .matrix-bg { position: fixed; inset: 0; z-index: -1; opacity: 0.1; pointer-events: none; }
+        .glass { background: rgba(0, 20, 0, 0.8); border: 1px solid #00ff4133; border-radius: 12px; }
+        .scan-line { height: 2px; background: #00ff41; position: absolute; width: 100%; animation: scan 3s infinite linear; opacity: 0.3; }
+        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+        .terminal-text { font-size: 11px; line-height: 1.4; }
+        .access-granted { color: #00ff41; text-shadow: 0 0 10px #00ff41; }
+        .access-denied { color: #ff0000; text-shadow: 0 0 10px #ff0000; }
+        input { background: transparent !important; border: 1px solid #00ff41 !important; color: #00ff41 !important; outline: none; }
+    </style>
+</head>
+<body class="p-4 md:p-10 h-screen flex flex-col">
+
+    <div class="scan-line"></div>
+    
+    <header class="flex justify-between items-center mb-6 border-b border-[#00ff4133] pb-4">
+        <div>
+            <h1 class="text-xl font-bold tracking-tighter">VNIO-SHIELD <span class="text-white">v4.0</span></h1>
+            <p class="text-[9px] uppercase tracking-widest opacity-70">Active Cyber Defense & Key Validator</p>
+        </div>
+        <div id="defense-status" class="text-[10px] bg-[#00ff4122] px-3 py-1 rounded-full border border-[#00ff41]">
+            <i class="fas fa-shield-virus mr-2"></i>ANTY-DDOS: ACTIVE
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 overflow-hidden">
+        
+        <div class="glass p-6 flex flex-col justify-center items-center text-center">
+            <i class="fas fa-fingerprint text-5xl mb-6"></i>
+            <h2 class="text-sm font-bold mb-2">AUTHENTICATION REQUIRED</h2>
+            <p class="text-[10px] mb-6 opacity-60">Masukkan Secret Web Key untuk mengakses Vnioapp Data</p>
+            
+            <input id="input-key" type="password" placeholder="ENTER ACCESS KEY" class="w-full p-4 rounded-lg text-center mb-4 text-sm font-bold tracking-widest">
+            <button onclick="validateKey()" class="w-full bg-[#00ff4122] hover:bg-[#00ff4144] border border-[#00ff41] py-4 rounded-lg font-bold text-xs">
+                INITIALIZE SECURE LINK
+            </button>
+            <div id="auth-msg" class="mt-4 text-[10px] font-bold"></div>
+        </div>
+
+        <div class="md:col-span-2 glass flex flex-col overflow-hidden">
+            <div class="p-3 border-b border-[#00ff4133] bg-[#00ff4111] flex justify-between">
+                <span class="text-[10px] font-bold">LIVE TRAFFIC DATA PATHWAY</span>
+                <span class="text-[10px]">AES-256 ENCRYPTED</span>
+            </div>
+            <div id="terminal" class="flex-1 p-4 terminal-text overflow-y-auto font-mono">
+                <div>[SYSTEM] Initializing security protocols...</div>
+                <div>[SYSTEM] Anti-DDOS Filter enabled on Port 8080/443...</div>
+                <div>[SYSTEM] Waiting for handshake...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+        <div class="glass p-3 text-center">
+            <p class="text-[8px] opacity-50">DDOS PROTECTION</p>
+            <p class="text-xs font-bold">MITIGATING <span id="ddos-count">0</span> REQ/S</p>
+        </div>
+        <div class="glass p-3 text-center">
+            <p class="text-[8px] opacity-50">FIREWALL STATUS</p>
+            <p class="text-xs font-bold text-blue-400">HARDENED</p>
+        </div>
+        <div class="glass p-3 text-center">
+            <p class="text-[8px] opacity-50">USER INTEGRITY</p>
+            <p class="text-xs font-bold">SECURED</p>
+        </div>
+        <div class="glass p-3 text-center">
+            <p class="text-[8px] opacity-50">ENCRYPTION</p>
+            <p class="text-xs font-bold">QUANTUM-READY</p>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeGnAjNVmoB-uYGWadpFkEyxlPpuTmz2o",
+            authDomain: "ceziroom.firebaseapp.com",
+            databaseURL: "https://ceziroom-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ceziroom",
+            storageBucket: "ceziroom.firebasestorage.app",
+            messagingSenderId: "771662623358",
+            appId: "1:771662623358:web:de5b7635f3ff27f19fde2f"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const terminal = document.getElementById('terminal');
+
+        function logTerminal(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            let color = "text-[#00ff41]";
+            if(type === 'error') color = "text-red-500";
+            if(type === 'success') color = "text-blue-400 font-bold";
+            
+            terminal.innerHTML += `<div class="${color}">[${time}] ${msg}</div>`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        // SIMULASI TRAFFIC DATA
+        setInterval(() => {
+            const actions = ["Inbound Packet", "SSL Handshake", "IP Verified", "Routing Data", "Filtering Headers"];
+            const randomAction = actions[Math.floor(Math.random() * actions.length)];
+            logTerminal(`${randomAction} from node_vni_${Math.floor(Math.random()*999)}... OK`);
+            document.getElementById('ddos-count').innerText = Math.floor(Math.random() * 50);
+        }, 4000);
+
+        async function validateKey() {
+            const inputKey = document.getElementById('input-key').value.trim();
+            const msg = document.getElementById('auth-msg');
+            
+            if(!inputKey) return logTerminal("ERROR: No Key Entered!", "error");
+
+            logTerminal(`Attempting Validation for Key: ${inputKey}...`);
+            
+            // CEK KE FIREBASE
+            db.ref('users').once('value', snap => {
+                const users = snap.val();
+                let found = false;
+                let userData = null;
+
+                for(let id in users) {
+                    if(users[id].vnio_key === inputKey) {
+                        found = true;
+                        userData = users[id];
+                        break;
+                    }
+                }
+
+                if(found) {
+                    msg.innerHTML = `<span class="access-granted">ACCESS GRANTED! REDIRECTING...</span>`;
+                    logTerminal(`SUCCESS: Key Validated for User ${userData.username}`, "success");
+                    logTerminal(`IP: ${userData.ip} - Status: CLEAN`, "success");
+                    
+                    // Simpan session agar web ke-3 tahu user sudah aman
+                    sessionStorage.setItem('shield_verified', 'true');
+                    sessionStorage.setItem('shield_user', userData.username);
+
+                    setTimeout(() => {
+                        alert("SECURITY CHECK PASSED. Welcome to VNIO Ecosystem.");
+                        // window.location.href = "web-ketiga-kamu.html"; 
+                    }, 2000);
+                } else {
+                    msg.innerHTML = `<span class="access-denied">ACCESS DENIED: INVALID KEY</span>`;
+                    logTerminal(`SECURITY ALERT: Unauthorized access attempt with Key: ${inputKey}`, "error");
+                }
+            });
+        }
+    </script>
+</body>
+</html>
