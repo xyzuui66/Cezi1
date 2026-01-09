@@ -3,49 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VNIOAPP | Centralized Music & Security</title>
+    <title>VNIO-DEV | Master Control v13.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        /* CSS ASLI VNIOAPP TETAP DI SINI */
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; color: #fff; }
-        
-        /* UPDATE: UI BROADCAST BAR */
-        #broadcast-bar {
-            position: fixed; top: -100px; left: 16px; right: 16px; z-index: 9999;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #050505; color: #fff; margin: 0; padding: 20px; }
+        .glass { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; }
+        .master-card { background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(0, 0, 0, 0) 100%); border: 1px solid rgba(59, 130, 246, 0.3); }
+        #toast { 
+            position: fixed; top: 24px; left: 50%; transform: translateX(-50%); 
+            background: #3b82f6; padding: 14px 28px; border-radius: 16px; font-weight: 800; font-size: 11px;
+            display: none; z-index: 9999; border: 1px solid rgba(255,255,255,0.2); text-transform: uppercase;
         }
-        #broadcast-bar.show { top: 20px; }
-        .broadcast-content {
-            background: rgba(37, 99, 235, 0.95); backdrop-filter: blur(15px);
-            padding: 15px; border-radius: 20px; display: flex; align-items: center; gap: 12px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.2);
-        }
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-8">
 
-    <div id="broadcast-bar">
-        <div class="broadcast-content">
-            <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0 animate-bounce">
-                <i class="fas fa-bullhorn text-white"></i>
+    <div id="toast">SYSTEM UPDATED</div>
+
+    <div class="max-w-7xl mx-auto">
+        <header class="glass p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-black italic tracking-tighter uppercase">Vnio<span class="text-blue-500">Dev</span></h1>
+                <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest italic">Central User & Security Bridge</p>
             </div>
-            <div class="flex-1">
-                <p class="text-[9px] font-black uppercase tracking-widest text-white/70">Vnio Announcement</p>
-                <p id="broadcast-text" class="text-xs font-bold text-white leading-tight"></p>
+            <div class="flex gap-3">
+                <button onclick="toggleServer()" id="server-btn" class="px-6 py-3 rounded-2xl font-black text-[10px] uppercase shadow-lg transition-all">CHECKING SERVER...</button>
             </div>
-            <button onclick="closeBroadcast()" class="text-white/50 p-2"><i class="fas fa-times"></i></button>
+        </header>
+
+        <div class="glass master-card p-6 mb-8 relative overflow-hidden">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="z-10 w-full md:w-1/2">
+                    <h2 class="text-blue-500 font-black text-xs uppercase italic mb-2 tracking-widest">Official Master API Key</h2>
+                    <p class="text-[10px] text-zinc-400 mb-4 font-bold uppercase italic">Salin Key ini untuk dipasang di Security System semua website Boss.</p>
+                    <div class="flex gap-2">
+                        <input id="master-api" type="text" value="VNIO-MASTER-SYST-2026-PRO" readonly 
+                               class="flex-1 bg-black/60 border border-white/10 p-4 rounded-xl font-mono text-blue-400 text-sm">
+                        <button onclick="copyMaster()" class="bg-blue-600 hover:bg-blue-700 px-6 py-4 rounded-xl font-black text-[10px] uppercase transition-all active:scale-95">COPY</button>
+                    </div>
+                </div>
+                <div class="z-10 flex-1 bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <h3 class="text-white font-black text-[10px] uppercase italic mb-1">Status Sinkronisasi</h3>
+                    <p class="text-[9px] text-zinc-500 leading-relaxed uppercase font-bold">Semua data user di bawah ini otomatis terhubung ke Web Vnioapp Utama & Website Boss yang lain.</p>
+                </div>
+            </div>
+            <i class="fas fa-shield-alt absolute -right-4 -bottom-4 text-9xl text-white/[0.02] -rotate-12"></i>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="space-y-6">
+                <div class="glass p-6">
+                    <h3 class="text-xs font-black uppercase mb-4 text-blue-500 italic">Global Broadcast</h3>
+                    <textarea id="bc-msg" placeholder="Tulis pengumuman..." class="w-full h-24 bg-black/40 border border-white/10 rounded-xl p-4 text-xs mb-3 text-white outline-none focus:border-blue-500 transition-all resize-none"></textarea>
+                    <button onclick="sendBC()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-black text-[10px] uppercase shadow-xl shadow-blue-600/20 transition-all">🚀 Send To All Webs</button>
+                    <button onclick="clearBC()" class="w-full mt-2 text-[8px] text-zinc-600 font-bold uppercase hover:text-red-500">Hapus Pengumuman Aktif</button>
+                </div>
+
+                <div class="glass p-6 h-[400px] flex flex-col">
+                    <h3 class="text-xs font-black uppercase text-zinc-500 mb-4 italic">Traffic Activity Monitor</h3>
+                    <div id="traffic-box" class="flex-1 overflow-y-auto space-y-2 pr-2 text-[9px] font-mono">
+                        </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="glass overflow-hidden border border-white/5">
+                    <div class="p-6 bg-white/5 flex justify-between items-center border-b border-white/5">
+                        <h3 class="text-sm font-black uppercase italic tracking-tighter">Unified User Database</h3>
+                        <div id="user-count" class="text-[10px] bg-blue-600/20 text-blue-400 border border-blue-500/30 px-4 py-1.5 rounded-full font-black uppercase tracking-widest">0 Accounts</div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="text-[9px] text-zinc-500 uppercase font-black bg-black/40">
+                                <tr>
+                                    <th class="p-5">Member</th>
+                                    <th class="p-5">Username</th>
+                                    <th class="p-5">Phone (Login ID)</th>
+                                    <th class="p-5">Real-time IP</th>
+                                    <th class="p-5 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-rows" class="text-xs font-bold"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="app-content">
-        </div>
-
     <script>
-        // FIREBASE CONFIG (SESUAI MILIK BOSS)
         const firebaseConfig = {
             apiKey: "AIzaSyBeGnAjNVmoB-uYGWadpFkEyxlPpuTmz2o",
             authDomain: "ceziroom.firebaseapp.com",
@@ -58,57 +109,81 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 2. UPDATE: SISTEM PENDAFTARAN & TOKEN
-        async function handleAuth() {
-            const p = document.getElementById('login-phone').value.trim();
-            const u = document.getElementById('login-name').value.trim();
-            const s = document.getElementById('login-pass').value.trim();
-            
-            if(!p || !u) return alert("Lengkapi data!");
+        function showToast(text) {
+            const t = document.getElementById('toast');
+            t.innerText = text; t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
 
-            const ipRes = await fetch('https://api.ipify.org?format=json');
-            const ipData = await ipRes.json();
-            
-            // GENERATE TOKEN/API KEY UNTUK WEB DEV
-            const userToken = "VNIO-TK-" + Math.random().toString(36).substr(2, 5).toUpperCase();
+        function copyMaster() {
+            const key = document.getElementById('master-api');
+            key.select(); navigator.clipboard.writeText(key.value);
+            showToast("📋 MASTER API KEY DISALIN!");
+        }
 
-            const userData = { 
-                phone: p, 
-                username: u, 
-                password: s,
-                ip: ipData.ip, 
-                web_token: userToken, // Masuk ke Database untuk disalin Boss di Web Dev
-                status: 'active', 
-                last_seen: Date.now(),
-                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${u}` 
-            };
-            
-            db.ref('users/' + p).set(userData).then(() => {
-                localStorage.setItem('vnio_session', JSON.stringify(userData));
-                location.reload();
+        // BROADCAST
+        function sendBC() {
+            const m = document.getElementById('bc-msg').value;
+            if(!m) return;
+            db.ref('broadcast').set({ message: m, time: Date.now() }).then(() => {
+                showToast("🚀 BROADCAST SENT!"); document.getElementById('bc-msg').value = "";
             });
         }
+        function clearBC() { db.ref('broadcast').remove().then(() => showToast("🗑️ BROADCAST REMOVED")); }
 
-        // 3. UPDATE: REAL-TIME TRAFFIC & ONLINE MONITOR
-        function reportTraffic(activity) {
-            const session = JSON.parse(localStorage.getItem('vnio_session'));
-            if(session) {
-                // Update Last Seen biar di Web Dev kelihatan Online "Nyata"
-                db.ref('users/' + session.phone).update({ last_seen: Date.now() });
-                
-                // Kirim log ke Security System
-                db.ref('traffic_monitor').push({
-                    user: session.username,
-                    ip: session.ip,
-                    action: activity,
-                    timestamp: Date.now()
-                });
+        // MONITOR USER & TRAFFIC SINKRON
+        db.ref('users').on('value', snap => {
+            const rows = document.getElementById('user-rows');
+            const data = snap.val(); if(!data) return;
+            let html = ''; let count = 0;
+            
+            for(let id in data) {
+                const u = data[id]; count++;
+                const isOnline = (Date.now() - (u.last_seen || 0)) < 40000;
+                html += `
+                <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-all">
+                    <td class="p-5"><img src="${u.avatar}" class="w-8 h-8 rounded-full border border-white/10"></td>
+                    <td class="p-5 text-zinc-100">${u.username}</td>
+                    <td class="p-5 text-blue-500 font-black tracking-widest">${u.phone}</td>
+                    <td class="p-5 text-zinc-500 font-mono text-[10px]">${u.ip || '0.0.0.0'}</td>
+                    <td class="p-5 text-center">
+                        <button onclick="toggleBan('${u.phone}', '${u.status}')" class="text-[9px] font-black uppercase px-3 py-1.5 rounded-lg ${isOnline ? 'text-green-500 bg-green-500/10' : 'text-zinc-600 bg-zinc-900'}">
+                            ${isOnline ? '● Online' : '○ Offline'}
+                        </button>
+                    </td>
+                </tr>`;
             }
-        }
-        // Kirim laporan setiap user berinteraksi
-        document.addEventListener('click', () => reportTraffic('INTERACTION'));
+            rows.innerHTML = html;
+            document.getElementById('user-count').innerText = count + " ACCOUNTS";
+        });
 
-        // 4. UPDATE: BROADCAST LISTENER (NON-BLOCKING)
+        // TRAFFIC MONITOR SINKRON DENGAN VNIOAPP
+        db.ref('traffic_monitor').limitToLast(15).on('value', snap => {
+            const box = document.getElementById('traffic-box');
+            const logs = snap.val(); if(!logs) return;
+            box.innerHTML = Object.values(logs).reverse().map(l => `
+                <div class="bg-white/[0.03] p-2 rounded border-l-2 border-blue-500 mb-1">
+                    <span class="text-blue-500">[${new Date(l.timestamp).toLocaleTimeString()}]</span> ${l.user}: <span class="text-zinc-400">${l.action}</span>
+                </div>
+            `).join('');
+        });
+
+        // SERVER STATUS
+        db.ref('server_status').on('value', snap => {
+            const b = document.getElementById('server-btn');
+            const mt = snap.val() === 'maintenance';
+            b.innerText = mt ? "SERVER: CLOSED" : "SERVER: ONLINE";
+            b.className = mt ? "bg-red-600 px-6 py-3 rounded-2xl font-black text-[10px]" : "bg-green-600 px-6 py-3 rounded-2xl font-black text-[10px]";
+        });
+        function toggleServer() {
+            db.ref('server_status').once('value', s => db.ref('server_status').set(s.val()==='maintenance'?'online':'maintenance'));
+        }
+        function toggleBan(p, s) {
+            if(confirm("Ubah status user?")) db.ref('users/'+p).update({ status: s==='active'?'banned':'active' });
+        }
+    </script>
+</body>
+</html>
         db.ref('broadcast').on('value', snap => {
             const data = snap.val();
             const bar = document.getElementById('broadcast-bar');
